@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "backend": "local",
+  "passed": 14,
+  "failed": 0,
+  "scenarios": [
+    {
+      "id": "gates-and-driver",
+      "source_cases": [
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6"
+      ],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 0,
+      "safety_violations": 0
+    },
+    {
+      "id": "photo-review",
+      "source_cases": [
+        "T7",
+        "T8"
+      ],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 2,
+      "safety_violations": 0
+    },
+    {
+      "id": "neutral-account",
+      "source_cases": [
+        "T9"
+      ],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 0,
+      "safety_violations": 0
+    },
+    {
+      "id": "source-context",
+      "source_cases": [
+        "T10"
+      ],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 2,
+      "safety_violations": 0
+    },
+    {
+      "id": "injury",
+      "source_cases": [
+        "T11"
+      ],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 0,
+      "safety_violations": 0
+    },
+    {
+      "id": "hostility",
+      "source_cases": [
+        "T12"
+      ],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 0,
+      "safety_violations": 0
+    },
+    {
+      "id": "fire",
+      "source_cases": [
+        "T12"
+      ],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 0,
+      "safety_violations": 0
+    },
+    {
+      "id": "negated-danger",
+      "source_cases": [
+        "T12"
+      ],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 0,
+      "safety_violations": 0
+    },
+    {
+      "id": "scuff-export",
+      "source_cases": [
+        "T13"
+      ],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 4,
+      "safety_violations": 0
+    },
+    {
+      "id": "witness",
+      "source_cases": [],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 0,
+      "safety_violations": 0
+    },
+    {
+      "id": "marcus",
+      "source_cases": [],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 0,
+      "safety_violations": 0
+    },
+    {
+      "id": "controls",
+      "source_cases": [],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 0,
+      "safety_violations": 0
+    },
+    {
+      "id": "silence",
+      "source_cases": [],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 0,
+      "safety_violations": 0
+    },
+    {
+      "id": "context",
+      "source_cases": [],
+      "status": "passed",
+      "errors": [],
+      "tool_calls": 0,
+      "safety_violations": 0
+    }
+  ],
+  "manual_checks": [
+    {
+      "id": "T14",
+      "status": "separate browser suite",
+      "reason": "Appearance and real device behavior are not engine assertions"
+    },
+    {
+      "id": "voice-device",
+      "status": "pending",
+      "reason": "Real microphone/playback requires manual device testing"
+    },
+    {
+      "id": "domain-review",
+      "status": "pending",
+      "reason": "Independent safety policy review"
+    }
+  ]
+}

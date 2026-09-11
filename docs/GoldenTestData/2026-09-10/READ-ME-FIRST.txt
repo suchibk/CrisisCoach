@@ -1,0 +1,21 @@
+CRISIS COACH — PROTOTYPE
+Week 5 group project · packaged 10 September 2026
+
+RUN IT
+  Mac      double-click  start.command
+  Linux    ./start.sh
+  Windows  open a terminal here and run:  python -m http.server 8000
+
+THEN OPEN
+  http://localhost:8000/crisis-coach-prototype.html
+
+Use Chrome or Edge. Do NOT double-click the .html file itself — opening it
+as file:// blocks the microphone and the demo will look broken.
+
+VOICE
+  Tap the microphone once. It keeps listening and answers out loud.
+  It only works on http://localhost — not on a phone over wifi, and not
+  on iPhone at all (Safari and iOS Chrome cannot do web speech input).
+
+Full instructions and the test script are in
+  docs/Crisis Coach - Deployment and Test.docx

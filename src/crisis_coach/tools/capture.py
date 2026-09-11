@@ -6,7 +6,7 @@ from .executor import ToolExecutor
 from ..persistence.attachments import AttachmentStore, MAX_FILE_BYTES
 
 
-def build_capture_executor(root: Path) -> ToolExecutor:
+def build_capture_executor(root: Path, knowledge_root: Path | None = None) -> ToolExecutor:
     store = AttachmentStore(root)
     registry = ToolRegistry()
 
@@ -36,5 +36,5 @@ def build_capture_executor(root: Path) -> ToolExecutor:
         lambda args, context: build_evidence_pack(args, root, root.parent / "exports", context.event_id),
         result_model=EvidencePackReference))
     from .knowledge import register_knowledge_tools
-    register_knowledge_tools(registry)
+    register_knowledge_tools(registry, knowledge_root)
     return ToolExecutor(registry)

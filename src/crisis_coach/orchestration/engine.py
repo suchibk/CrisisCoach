@@ -3,7 +3,7 @@ from __future__ import annotations
 from uuid import uuid4
 
 from ..models import Instruction, SceneState, SessionStatus
-from ..models.events import Control, ControlEvent, TextEvent, TimerEvent, CaptureEvent, ReportEvent, QuestionEvent, ContextEvent, AIConsentEvent, InputEvent, INPUT_EVENT_ADAPTER
+from ..models.events import Control, ControlEvent, TextEvent, TimerEvent, CaptureEvent, ReportEvent, QuestionEvent, ContextEvent, IncidentContextEvent, AIConsentEvent, InputEvent, INPUT_EVENT_ADAPTER
 from ..tools.executor import ToolExecutor
 from ..tools.contracts import ToolContext, ToolError
 from ..models.evidence import EvidenceStatus
@@ -26,8 +26,8 @@ class WorkflowEngine:
         self._graph = TurnGraph(self, backend=backend)
         self.last_route: tuple[str, ...] = ()
 
-    def start(self, person_name: str = "Dana Okoye") -> tuple[SceneState, Instruction]:
-        state = SceneState(incident_id=str(uuid4()), person_name=person_name, domain_id=self.pack.metadata.domain_id, pack_version=self.pack.metadata.version)
+    def start(self, person_name: str = "Dana Okoye", profile=None, practice: bool = False) -> tuple[SceneState, Instruction]:
+        state = SceneState(incident_id=str(uuid4()), person_name=person_name, profile=profile, practice_mode=practice, domain_id=self.pack.metadata.domain_id, pack_version=self.pack.metadata.version)
         state.events.append("SCENE_OPENED")
         reply = self._publish(state, self.pack.opening(state))
         if self._repository is not None:
@@ -59,6 +59,14 @@ class WorkflowEngine:
         elif user_text.strip().lower() in ("/ai-text on", "/ai-text off", "/ai-images on", "/ai-images off"):
             command, value = user_text.strip().lower().split()
             event = AIConsentEvent(capability="text" if command == "/ai-text" else "images", allowed=value == "on")
+        elif user_text.strip().startswith("/context "):
+            from ..models.incident_context import IncidentContext
+            from pydantic import ValidationError
+            try:
+                event = IncidentContextEvent(context=IncidentContext.model_validate_json(user_text.strip()[9:]))
+            except ValidationError:
+                # Invalid commands still pass through the safety guard.
+                event = TextEvent(text=user_text)
         elif user_text.strip().lower() == "/knowledge-demo":
             from datetime import date
             from ..models.knowledge import KnowledgeContext
@@ -112,6 +120,12 @@ class WorkflowEngine:
         if working.model_dump() == state.model_dump():
             return response
         working.events.append("GRAPH_ROUTE: " + " -> ".join(self.last_route))
+        from ..models.trace import TurnTrace
+        entry = TurnTrace(event_id=event.event_id, event_kind=event.kind, route=self.last_route,
+            status=working.status.value, gate=str(working.safety_gate),
+            selected_id=working.current_evidence_id if working.status is SessionStatus.ACTIVE and self.pack.is_cleared(working) else None,
+            response=response.text if response else None)
+        working.trace = (*working.trace[-99:], entry)
         if self._repository is not None:
             try:
                 if self._repository.has_event(state.incident_id, event.event_id):
@@ -228,8 +242,11 @@ class WorkflowEngine:
         state.events.append("TOOL_COMPLETED: build_evidence_pack")
         return Instruction(text=f"Evidence pack saved locally. Stored items: {result.stored_items}/{result.required_items}. Review the gaps before sharing.", reason=result.relative_path)
 
-    def answer_question(self, state: SceneState, event: QuestionEvent | ContextEvent) -> Instruction:
+    def answer_question(self, state: SceneState, event: QuestionEvent | ContextEvent | IncidentContextEvent) -> Instruction:
         from ..models.knowledge import KnowledgeAnswer, KnowledgeQuery
+        if isinstance(event, IncidentContextEvent):
+            state.incident_context = event.context
+            return Instruction(text="Incident details saved as user-provided observations. Blank fields remain unknown.")
         if isinstance(event, ContextEvent):
             state.knowledge_context = event.context
             label = "SYNTHETIC DEMO sources enabled; these are not real policy or legal requirements." if event.context.allow_synthetic else "Source context updated. Only matching reviewed local passages will be used."

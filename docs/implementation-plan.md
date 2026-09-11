@@ -86,3 +86,23 @@ Validation uses mocked specialists without provider calls. Live provider compati
 Implemented optional REST speech synthesis/transcription adapters, Pydantic audio/configuration/transcript contracts, Streamlit recording and reviewed transcript submission, response playback with speech-rate support, per-browser consent, background requests, and stale-result invalidation. Existing workflow gates and timers remain authoritative. Audio is transient, not captured evidence. Opening/starting an incident resets voice consent.
 
 Full-duplex streaming, barge-in, CLI microphone integration, live provider verification, and browser microphone/playback validation remain future work. Incident context capture remains the next planned functional milestone.
+
+## Progress: user-provided incident context
+
+Implemented typed incident context and input events for timezone-aware incident time, location, and observed weather. CLI `/context` JSON and a Streamlit form replace the saved context; omitted fields remain unknown. Context persists through SQLite recovery and appears in DOCX exports labelled user-provided and unverified. Context updates preserve collection tasks and deadlines, respect pause/safety gates, and screen free text for injury signals. Existing snapshots default to empty context without a schema migration. Source-lookup context remains separately selected.
+
+Validation: 126 tests passed, 15 skipped due to absent optional LangGraph, Streamlit, and httpx dependencies. New regression coverage verifies context persistence/reopening, DOCX content, timer preservation, timezone validation, legacy defaults, and safety/pause handling. Browser interaction remains unverified.
+
+Next: profile setup and practice views. Automatic location/weather integrations, broader reviewed danger policies, outbound approval/delivery, and a reviewed second domain remain outstanding. Incident observations are manually supplied; no geolocation or historical weather service is called.
+
+## GoldenTestData UI and acceptance planning
+
+Reviewed the archived HTML prototype and fourteen-case deployment/test script. See [GoldenTestData UI and testing plan](golden-test-data-plan.md) for the case-by-case mapping, proposed active/practice UI, deterministic scenario runner, fixtures, and implementation sequence. Use the prototype as a presentation and scenario reference while retaining the Python engine as the authority. Local text replay confirmed a hostility-handling gap; prioritize reviewed danger handling before claiming demo acceptance. Profile/practice work now includes isolated simulation and backend-derived decision panels. Browser and voice validation remain outstanding.
+
+## Progress: GoldenTestData UI, practice and acceptance
+
+Implemented the golden scenario runner and fixtures, bounded hostility/fire routing with dedicated re-entry, neutral apology guidance, responsive Streamlit views, explicit controls, report review, optional persisted profile snapshots, and isolated Practice mode. Practice uses the real engine, temporary storage, fake photo review, a scripted clock, source-case prompts and backend-derived traces. Practice exports are labelled synthetic. Archived GoldenTestData files remain unchanged.
+
+Validation: 174 unit/integration/UI tests passed; the opt-in browser test passed separately. Fourteen golden scenarios passed on both local and LangGraph backends. Installed-wheel smoke checks passed for fixtures, safety resources, migrations, capture and export. See [acceptance report](golden-acceptance-report.md) for results, screenshots and adapted T1-T14 expectations.
+
+Next: reviewed statement drafting/next-step presentation and explicit approval/mock-delivery. Live microphone/device testing, provider compatibility, independent safety-policy review, automatic context services, and a reviewed second domain remain pending. Profile/practice and a first operational scenario report are now implemented.

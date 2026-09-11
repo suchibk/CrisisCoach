@@ -2,7 +2,7 @@
 from typing import TYPE_CHECKING
 from pydantic import BaseModel, ConfigDict
 from ..models import SceneState, Instruction, SessionStatus
-from ..models.events import InputEvent, TextEvent, TimerEvent, CaptureEvent, ReportEvent, QuestionEvent, ContextEvent, AIConsentEvent
+from ..models.events import InputEvent, TextEvent, TimerEvent, CaptureEvent, ReportEvent, QuestionEvent, ContextEvent, IncidentContextEvent, AIConsentEvent
 
 if TYPE_CHECKING:
     from .engine import WorkflowEngine
@@ -42,7 +42,7 @@ class TurnGraph:
             return "end"
         if state.route[-1] == "gate" and isinstance(state.event, AIConsentEvent):
             return "consent"
-        if state.route[-1] == "gate" and isinstance(state.event, (QuestionEvent, ContextEvent)):
+        if state.route[-1] == "gate" and isinstance(state.event, (QuestionEvent, ContextEvent, IncidentContextEvent)):
             return "answer"
         if state.route[-1] == "gate" and isinstance(state.event, ReportEvent):
             return "report"
@@ -55,6 +55,8 @@ class TurnGraph:
 
     def safety(self, state: TurnState):
         text = state.event.text if isinstance(state.event, TextEvent) else (state.event.question if isinstance(state.event, QuestionEvent) else (state.event.arguments.get("text", "") if isinstance(state.event, CaptureEvent) else ""))
+        if isinstance(state.event, IncidentContextEvent):
+            text = state.event.context.safety_text()
         reply = self.engine.pack.preempt(state.scene, text) if text else None
         if reply is not None:
             state.scene.last_event_id = state.event.event_id
@@ -69,8 +71,20 @@ class TurnGraph:
         return self.update(state, "controls", reply, handled)
 
     def gate(self, state: TurnState):
-        if isinstance(state.event, (QuestionEvent, ContextEvent, AIConsentEvent)) and state.scene.status is SessionStatus.ACTIVE and self.engine.pack.is_cleared(state.scene):
+        if self.engine.pack.metadata.domain_id == "collision" and isinstance(state.event, TextEvent) and state.scene.status is SessionStatus.ACTIVE and self.engine.pack.is_cleared(state.scene):
+            import re
+            if re.search(r"\b(?:sorry|my fault|apologise|apologize)\b", state.event.text, re.I):
+                check = getattr(self.engine.pack, "capture_safety", self.engine.pack.guard)
+                reply = check(state.scene, state.event.text)
+                if reply is not None:
+                    self.engine._publish(state.scene, reply)
+                    return self.update(state, "gate", reply, True)
+                state.scene.events.append("USER: " + state.event.text)
+                return self.update(state, "gate", Instruction(text="You can describe what you observed in your own words. I cannot determine fault or the legal effect of an apology. Your current collection task is unchanged."), True)
+        if isinstance(state.event, (QuestionEvent, ContextEvent, IncidentContextEvent, AIConsentEvent)) and state.scene.status is SessionStatus.ACTIVE and self.engine.pack.is_cleared(state.scene):
             text = state.event.question if isinstance(state.event, QuestionEvent) else ""
+            if isinstance(state.event, IncidentContextEvent):
+                text = state.event.context.safety_text()
             check = getattr(self.engine.pack, "capture_safety", self.engine.pack.guard)
             reply = check(state.scene, text) if text else None
             if reply is not None: self.engine._publish(state.scene, reply)

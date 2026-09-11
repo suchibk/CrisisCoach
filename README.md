@@ -1,6 +1,6 @@
 # Crisis Coach prototype
 
-Python prototype of the local-first car-collision coach described in the project documents. The current scope is limited to legal and safety use cases following a road-traffic collision. The implemented sample focuses on Dana Okoye's safety stand-down scenario.
+Python prototype of the local-first car-collision coach described in the project documents. The current scope is limited to legal and safety use cases following a road-traffic collision. The app includes incident collection, report review, profile setup, and isolated practice scenarios for Priya, Marcus, and Dana.
 
 ## Quick start
 
@@ -189,3 +189,25 @@ Local capture accepts up to 20 MiB; AI review accepts up to 5 MiB. Calls use the
 Install `pip install -e ".[ui,voice]"` and set `ELEVENLABS_API_KEY` and `ELEVENLABS_VOICE_ID` in your environment. Restart Streamlit, open **ElevenLabs voice**, and enable playback or transcription. Record a short answer, send it for transcription, review it, and submit. Spoken responses preserve the coach text and slow-down setting. Voice is optional and calls require explicit controls; no calls happen just because credentials are configured.
 
 See [voice setup and behavior](src/crisis_coach/interfaces/voice/README.md) for limits and data handling. This is push-to-record with manual playback; continuous hands-free conversation remains future work.
+
+## Incident time, location and weather
+
+After safety clearance, open **Incident time, location and weather** in Streamlit, or submit this CLI command:
+
+```text
+/context {"occurred_at":"2026-09-11T14:30:00-04:00","location":"Oak Street near the library","weather":"Rain"}
+```
+
+Use a timezone offset for the incident time. Fields are optional; saving replaces the context, and `/context {}` clears it. Details are stored as user-provided, unverified observations and included in subsequent DOCX exports. Unknown fields are labelled unknown. Updates preserve the collection task and timer, and do not change the separate policy/jurisdiction source context. No location or weather provider is contacted.
+
+## GoldenTestData UI and practice
+
+Start the app with `python -m streamlit run src/crisis_coach/interfaces/streamlit_app.py`.
+
+Choose **Practice** in the sidebar to use synthetic data with no external AI/voice calls. Select a scenario and press **Start / reset practice**, then use suggested inputs or type your own. **Simulate rejected photo** and **Simulate usable photo** create labelled fixture captures. The practice clock advances only through its button. The decision panel displays actual graph routes and priority comparisons. Leaving/resetting practice removes its temporary storage; returning to a live incident rechecks safety.
+
+Choose **Profile** to save optional vehicle, insurer/policy, and trusted-contact details locally. New incidents take a profile snapshot; existing incidents and source context are not silently changed. **Evidence pack** shows original text/photos and gaps, builds a real DOCX, and offers a download. Practice exports are explicitly labelled synthetic. Dark/light appearance and a mobile-width layout are available.
+
+Directed hostility and bounded fire-risk language now stop collection. Environmental stand-down has its own re-entry check; injury still takes precedence. These are limited deterministic rules with pending independent expert review. Apology handling is neutral and makes no liability determination.
+
+Run golden evaluations with `python -m crisis_coach.evaluation.runner evals/scenarios/golden.json`. See [test instructions](evals/README.md) and [acceptance report](docs/golden-acceptance-report.md) for the T1-T14 mapping, screenshots and remaining validation.

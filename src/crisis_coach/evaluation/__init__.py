@@ -1,0 +1,1 @@
+"""Validated golden scenario evaluation."""

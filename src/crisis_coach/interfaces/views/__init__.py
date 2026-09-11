@@ -1,1 +1,1 @@
-"""Presentation components over the shared response contract."""
+"""Streamlit presentation adapters."""

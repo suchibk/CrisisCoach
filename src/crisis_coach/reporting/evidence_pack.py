@@ -30,12 +30,19 @@ def build_evidence_pack(args: EvidencePackArgs, attachment_root: Path, export_ro
     store = AttachmentStore(attachment_root)
     document = Document()
     document.add_heading("Crisis Coach evidence pack", 0)
+    if scene.practice_mode:
+        document.add_paragraph("PRACTICE: synthetic data and simulated assessments. Not a real incident record.")
     generated = datetime.now(timezone.utc)
     document.add_paragraph(f"Incident: {scene.incident_id} | Person: {scene.person_name}")
     document.add_paragraph(f"Domain: {scene.domain_id} | Pack: {scene.pack_version} | Record revision: {scene.revision}")
     document.add_paragraph(f"Export generated at {generated.isoformat()} (not the collision time).")
     document.add_paragraph("This is a local evidence record for review, not a filed claim. Any AI image-quality assessment is not human verification or confirmation of claim readiness.")
-    document.add_paragraph("Collision timestamp, location, and weather are not captured by this prototype and are not inferred. Any recorded source passages appear below; their legal applicability has not been determined.")
+    document.add_heading("Incident context (user-provided, unverified)", 1)
+    context = scene.incident_context
+    document.add_paragraph(f"Incident time: {context.occurred_at.isoformat() if context.occurred_at else 'Unknown'}")
+    document.add_paragraph(f"Location: {context.location or 'Unknown'}")
+    document.add_paragraph(f"Weather observation: {context.weather or 'Unknown'}")
+    document.add_paragraph("Any recorded source passages appear below; their legal applicability has not been determined.")
     # Reserve summary near the front; populate after validating and embedding files.
     summary = document.add_paragraph()
     table = document.add_table(rows=1, cols=4)

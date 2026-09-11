@@ -10,10 +10,10 @@ from ..knowledge.local import LocalKnowledgeRetriever
 from ..knowledge.ingestion import load_corpus
 
 
-def register_knowledge_tools(registry: ToolRegistry):
+def register_knowledge_tools(registry: ToolRegistry, knowledge_root: Path | None = None):
     try:
         custom = os.getenv("CRISIS_COACH_KNOWLEDGE_DIR")
-        root = Path(custom) if custom else Path(str(files("crisis_coach.domains.collision").joinpath("resources/knowledge")))
+        root = knowledge_root if knowledge_root is not None else (Path(custom) if custom else Path(str(files("crisis_coach.domains.collision").joinpath("resources/knowledge"))))
         if not root.is_dir(): raise OSError("Source directory is unavailable")
         retriever = LocalKnowledgeRetriever(load_corpus(root))
     except (OSError, ValidationError):

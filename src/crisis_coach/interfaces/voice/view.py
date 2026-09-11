@@ -49,7 +49,7 @@ def render_voice():
             if controller.audio:
                 st.audio(controller.audio.data, format=controller.audio.media_type)
                 st.caption("Use the player to play, pause, or replay without another API call.")
-        can_answer = scene.status is not SessionStatus.STOOD_DOWN or scene.safety_gate is SafetyGate.MEDICAL_REENTRY
+        can_answer = scene.status is not SessionStatus.STOOD_DOWN or scene.safety_gate in (SafetyGate.MEDICAL_REENTRY, SafetyGate.DANGER_REENTRY)
         if controller.microphone_allowed and can_answer:
             recording = st.audio_input("Record a short answer (maximum 30 seconds)", key=f"voice_record_{token}")
             if st.button("Send recording to ElevenLabs", disabled=recording is None or controller.busy, key="voice_transcribe"):

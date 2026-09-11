@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Crisis Coach Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#E9ECEE; --panel:#FFFFFF; --ink:#141B20; --mist:#5F6E78; --line:#D2DADF;
+    --accent:#B5620A; --shadow:rgba(12,20,26,.14);
+    --you:#0E7A5A; --you-bg:#E4F5EE; --you-line:#A8DCC7; --danger:#C0392B;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0C1216; --panel:#151E24; --ink:#E8EFF2; --mist:#8DA2AD; --line:#26333B;
+      --accent:#FFB020; --shadow:rgba(0,0,0,.55);
+      --you:#5FD3A6; --you-bg:#0F2A22; --you-line:#1E4E3E; --danger:#E0483B;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0C1216; --panel:#151E24; --ink:#E8EFF2; --mist:#8DA2AD; --line:#26333B;
+    --accent:#FFB020; --shadow:rgba(0,0,0,.55);
+    --you:#5FD3A6; --you-bg:#0F2A22; --you-line:#1E4E3E; --danger:#E0483B;
+  }
+  /* the phone screen has its own palette, independent of the page */
+  .phone{
+    --scr-bg:#0A0F13; --scr-surface:#151E25; --scr-raised:#1D2932; --scr-ink:#EDF3F6;
+    --scr-mist:#93A8B4; --scr-line:#2A3944; --home:#3A4A55;
+    --amber:#FFB020; --red:#E0483B; --go:#46B487;
+    --bub:#20404F; --bub-ink:#EDF3F6;
+    --warn-bg:#2E2208; --warn-line:#5A4310; --warn-ink:#FFE1A8;
+    --alert-bg:#331512; --alert-line:#5E2620; --alert-ink:#FFD9D4; --alert-tag:#FF9E92;
+  }
+  .phone.lightscr{
+    --scr-bg:#F1F5F8; --scr-surface:#FFFFFF; --scr-raised:#E7EEF3; --scr-ink:#121B21;
+    --scr-mist:#5C7180; --scr-line:#D2DDE4; --home:#AEBDC7;
+    --amber:#A85908; --red:#B93425; --go:#16795A;
+    --bub:#D7E7F1; --bub-ink:#102530;
+    --warn-bg:#FFF5DE; --warn-line:#E4C88E; --warn-ink:#6A4907;
+    --alert-bg:#FDE7E4; --alert-line:#E7B0A9; --alert-ink:#87291E; --alert-tag:#B93425;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px; margin:0 auto; padding:20px 20px 56px}
+
+  header{display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end;
+    justify-content:space-between; padding-bottom:14px; border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 5px}
+  h1{font-family:"Saira Condensed",Impact,sans-serif; font-weight:700; margin:0;
+    font-size:clamp(26px,3.6vw,38px); letter-spacing:.02em; line-height:.95; text-transform:uppercase}
+  .seg{display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--panel)}
+  .seg button{appearance:none; border:0; background:transparent; color:var(--mist); cursor:pointer;
+    font:600 12px/1 "IBM Plex Sans",sans-serif; padding:9px 13px; letter-spacing:.03em}
+  .seg button[aria-pressed="true"]{background:var(--accent); color:#fff}
+  .seg button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+  .stage{display:grid; grid-template-columns:372px 1fr; gap:26px; margin-top:22px; align-items:start}
+  @media (max-width:900px){ .stage{grid-template-columns:1fr} .left{position:static!important} }
+
+  /* ------------------------------- phone -------------------------------- */
+  .left{position:sticky; top:18px; display:flex; flex-direction:column; align-items:center; gap:10px}
+  .phone{width:352px; max-width:100%; background:#000; padding:11px; position:relative;
+    box-shadow:0 24px 56px var(--shadow), 0 0 0 1px rgba(0,0,0,.35)}
+  .phone.ios{border-radius:46px}
+  .phone.android{border-radius:24px; padding:8px}
+  .screen{background:var(--scr-bg); color:var(--scr-ink); overflow:hidden; position:relative;
+    height:632px; display:flex; flex-direction:column}
+  .phone.ios .screen{border-radius:36px}
+  .phone.android .screen{border-radius:17px}
+  .notch{position:absolute; top:19px; left:50%; transform:translateX(-50%); width:100px; height:25px;
+    background:#000; border-radius:14px; z-index:4}
+  .phone.android .notch{width:10px; height:10px; border-radius:50%; top:15px; left:auto; right:24px; transform:none}
+  .statusbar{display:flex; justify-content:space-between; padding:9px 22px 4px;
+    font-family:"IBM Plex Mono",monospace; font-size:11px}
+  .phone.ios .statusbar{padding-top:14px}
+  .appbar{display:flex; align-items:center; gap:9px; padding:6px 18px 10px; border-bottom:1px solid var(--scr-line)}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--go)}
+  .dot.stopped{background:var(--red)}
+  .appbar .nm{font:700 14px/1 "IBM Plex Sans",sans-serif}
+  .appbar .meta{margin-left:auto; font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--scr-mist)}
+  .thread{flex:1; overflow-y:auto; padding:14px 15px 8px; display:flex; flex-direction:column; gap:10px}
+  .msg{max-width:88%; font-size:14.5px; line-height:1.45; border-radius:14px; padding:10px 13px}
+  .msg.agent{align-self:flex-start; background:var(--scr-surface); border:1px solid var(--scr-line); border-bottom-left-radius:5px}
+  .msg.user{align-self:flex-end; background:var(--bub); color:var(--bub-ink); border-bottom-right-radius:5px}
+  .msg.alert{background:var(--alert-bg); border:1px solid var(--alert-line); color:var(--alert-ink)}
+  .msg.warn{background:var(--warn-bg); border:1px solid var(--warn-line); color:var(--warn-ink)}
+  .msg .tag{display:block; font-family:"IBM Plex Mono",monospace; font-size:9.5px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--amber); margin-bottom:5px}
+  .msg.alert .tag{color:var(--alert-tag)}
+  .msg .sub{display:block; margin-top:6px; font-size:12px; color:var(--scr-mist); line-height:1.4}
+  .composer{display:flex; gap:8px; padding:10px 13px 12px; border-top:1px solid var(--scr-line)}
+  .composer input{flex:1; min-width:0; background:var(--scr-raised); border:1px solid var(--scr-line);
+    color:var(--scr-ink); border-radius:999px; padding:11px 14px; font:400 14px/1 "IBM Plex Sans",sans-serif}
+  .composer input::placeholder{color:var(--scr-mist)}
+  .composer input:focus{outline:2px solid var(--amber); outline-offset:-1px}
+  .rnd{flex:0 0 auto; width:44px; height:44px; border-radius:50%; border:1px solid var(--scr-line);
+    background:var(--scr-raised); color:var(--scr-ink); font-size:17px; cursor:pointer; display:grid; place-items:center}
+  .rnd.cam{background:var(--amber); border-color:var(--amber); color:#1A1206}
+  .rnd:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+  .homebar{display:flex; justify-content:center; padding:7px 0 9px}
+  .homebar i{width:118px; height:5px; border-radius:3px; background:var(--home)}
+  .navbar{display:flex; justify-content:center; align-items:center; gap:54px; padding:11px 0 12px; color:var(--home)}
+  .sig{display:inline-flex; align-items:flex-end; gap:2px}
+  .sig i{width:3px; border-radius:1px; background:currentColor}
+  .sig i:nth-child(1){height:5px} .sig i:nth-child(2){height:7px} .sig i:nth-child(3){height:9px}
+  .sig b{font-weight:400; margin-left:6px; line-height:1}
+  .nb{display:inline-block; opacity:.85}
+  .nb.tri{width:0; height:0; border-top:6px solid transparent; border-bottom:6px solid transparent;
+    border-right:9px solid currentColor}
+  .nb.cir{width:11px; height:11px; border:2px solid currentColor; border-radius:50%}
+  .nb.sq{width:10px; height:10px; border:2px solid currentColor; border-radius:2px}
+  .devnote{font-size:11.5px; color:var(--mist); text-align:center; line-height:1.5}
+
+  /* --------------------------- voice control ---------------------------- */
+  .voice{width:352px; max-width:100%; display:flex; align-items:center; gap:12px;
+    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:11px 13px}
+  .voice button{appearance:none; border:0; cursor:pointer; border-radius:999px;
+    width:42px; height:42px; flex:0 0 auto; display:grid; place-items:center;
+    background:var(--you); color:#062018; font-size:17px}
+  .voice button:focus-visible{outline:2px solid var(--you); outline-offset:2px}
+  .voice.on button{background:var(--danger); color:#fff; animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{50%{box-shadow:0 0 0 10px rgba(224,72,59,.16)}}
+  @media (prefers-reduced-motion:reduce){ .voice.on button{animation:none} }
+  .voice .vt{font-size:13px; font-weight:600; line-height:1.3}
+  .voice .vs{font-size:11.5px; color:var(--mist); line-height:1.35; margin-top:2px}
+
+  /* ---------------------------- right column ---------------------------- */
+  .right{display:flex; flex-direction:column; gap:18px}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px}
+  .card h2{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--mist); margin:0 0 13px; font-weight:600}
+
+  /* your turn — deliberately a different colour world from the agent */
+  .yours{background:var(--you-bg); border:1px solid var(--you-line)}
+  .yours h2{color:var(--you)}
+  .yours h2 b{font-weight:700}
+  .opts{display:flex; flex-direction:column; gap:8px}
+  .opts button{text-align:left; cursor:pointer; border-radius:10px; padding:11px 13px;
+    background:var(--panel); border:1px solid var(--you-line); color:var(--ink);
+    font:500 14px/1.35 "IBM Plex Sans",sans-serif; display:flex; gap:10px; align-items:baseline}
+  .opts button:hover{border-color:var(--you)}
+  .opts button:focus-visible{outline:2px solid var(--you); outline-offset:1px}
+  .opts button .k{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--you); flex:0 0 auto; padding-top:2px}
+  .opts button.jolt .k{color:#C9772A} .opts button.jolt{border-color:#E0B27F}
+  .opts button.danger .k{color:#C0392B} .opts button.danger{border-color:#E4A9A1}
+  .opts .none{font-size:13px; color:var(--mist); line-height:1.5}
+
+  /* decision tree */
+  .tree{position:relative; padding-left:22px}
+  .tree::before{content:""; position:absolute; left:5px; top:6px; bottom:6px; width:2px;
+    background:var(--line); border-radius:2px}
+  .nd{position:relative; padding:0 0 14px}
+  .nd:last-child{padding-bottom:0}
+  .nd .bul{position:absolute; left:-22px; top:2px; width:12px; height:12px; border-radius:50%;
+    background:var(--panel); border:2px solid var(--mist)}
+  .nd.gate .bul{border-color:var(--accent)}
+  .nd.act  .bul{border-color:var(--you)}
+  .nd.evt  .bul{border-color:#C9772A}
+  .nd.warn .bul{border-color:#C9772A; background:#C9772A}
+  .nd.stop .bul{border-color:var(--danger); background:var(--danger)}
+  .nd.now  .bul{border-color:var(--accent); background:var(--accent); box-shadow:0 0 0 4px rgba(255,176,32,.2)}
+  .nd .lb{font-size:13.5px; font-weight:600; line-height:1.35}
+  .nd .why{font-size:12px; color:var(--mist); line-height:1.4; margin-top:2px}
+  .nd .alt{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px}
+  .nd .alt span{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.04em;
+    color:var(--mist); border:1px dashed var(--line); border-radius:999px; padding:2px 8px}
+  .nd.stop .lb{color:var(--danger)}
+
+  .state{display:flex; flex-wrap:wrap; gap:7px}
+  .chip{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.04em;
+    border:1px solid var(--line); border-radius:999px; padding:4px 10px; color:var(--mist);
+    font-variant-numeric:tabular-nums}
+  .chip.hot{border-color:var(--danger); color:var(--danger)} .chip.warm{border-color:#C9772A; color:#C9772A}
+  .chip.ok{border-color:var(--you); color:var(--you)}
+  .foot{margin-top:12px; font-size:11.5px; color:var(--mist); line-height:1.5}
+  code{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Week 5 · interactive prototype</p>
+      <h1>Crisis Coach</h1>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap">
+      <div class="seg" role="group" aria-label="Device">
+        <button id="ios" aria-pressed="true">iPhone</button>
+        <button id="android" aria-pressed="false">Android</button>
+      </div>
+      <div class="seg" role="group" aria-label="Screen">
+        <button id="scrdark" aria-pressed="true">Dark screen</button>
+        <button id="scrlight" aria-pressed="false">Light</button>
+      </div>
+      <div class="seg"><button id="reset">Start over</button></div>
+    </div>
+  </header>
+
+  <div class="stage">
+    <!-- ------------------------------ left: phone ------------------------------ -->
+    <div class="left">
+      <div class="phone ios" id="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>19:42</span><span class="sig"><i></i><i></i><i></i><b>38%</b></span></div>
+          <div class="appbar">
+            <span class="dot" id="dot"></span><span class="nm">Crisis Coach</span>
+            <span class="meta" id="meta">collision</span>
+          </div>
+          <div class="thread" id="thread"></div>
+          <div class="composer">
+            <input id="in" placeholder="Say something…" autocomplete="off" aria-label="What you say">
+            <button class="rnd cam" id="cam" title="Camera" aria-label="Take the photo"><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path fill="currentColor" d="M9.4 4a1 1 0 0 0-.84.45L7.7 5.8H5A2.5 2.5 0 0 0 2.5 8.3v9A2.5 2.5 0 0 0 5 19.8h14a2.5 2.5 0 0 0 2.5-2.5v-9A2.5 2.5 0 0 0 19 5.8h-2.7l-.86-1.35A1 1 0 0 0 14.6 4Zm2.6 4.7a4.4 4.4 0 1 1 0 8.8 4.4 4.4 0 0 1 0-8.8Zm0 1.9a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/></svg></button>
+          </div>
+          <div class="homebar" id="homebar"><i></i></div>
+          <div class="navbar" id="navbar" hidden><span class="nb tri"></span><span class="nb cir"></span><span class="nb sq"></span></div>
+        </div>
+      </div>
+
+      <div class="voice" id="voice">
+        <button id="mic" aria-label="Start voice conversation"><svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path fill="currentColor" d="M12 14.2a3.1 3.1 0 0 0 3.1-3.1V6a3.1 3.1 0 0 0-6.2 0v5.1a3.1 3.1 0 0 0 3.1 3.1Z"/><path fill="currentColor" d="M17.4 11.1a.9.9 0 0 0-1.8 0 3.6 3.6 0 0 1-7.2 0 .9.9 0 0 0-1.8 0 5.4 5.4 0 0 0 4.5 5.3V19H9a.9.9 0 0 0 0 1.8h6a.9.9 0 0 0 0-1.8h-2.1v-2.6a5.4 5.4 0 0 0 4.5-5.3Z"/></svg></button>
+        <div>
+          <div class="vt" id="vt">Talk to it</div>
+          <div class="vs" id="vs">One tap. It keeps listening and answers out loud — no buttons after that.</div>
+        </div>
+      </div>
+      <p class="devnote" id="devnote">iPhone frame · the screen stays dark because it is 19:42 and raining</p>
+    </div>
+
+    <!-- ---------------------------- right: guidance ---------------------------- -->
+    <div class="right">
+      <section class="card yours">
+        <h2>Your turn — <b>say one of these</b>, or anything you like</h2>
+        <div class="opts" id="opts"></div>
+      </section>
+
+      <section class="card">
+        <h2>How this is unfolding</h2>
+        <div class="tree" id="tree"></div>
+        <p class="foot">Dotted chips are the branches you did not take. The guard sits before every
+          turn, so a stand-down can happen from any point on this line.</p>
+      </section>
+
+      <section class="card">
+        <h2>Scene state</h2>
+        <div class="state" id="state"></div>
+        <p class="foot" id="statefoot">Evidence is ordered by <code>value ÷ time left</code>. An event
+          that shortens a window reprices everything that dies with it.</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const el = id => document.getElementById(id);
+
+  /* ===================== DOMAIN PACK — collision ===================== */
+  const PERSIST = 900;
+  const EVENTS = {
+    OTHER_LEAVES:   { label:"Other driver leaves", start:600, short:"driver" },
+    WITNESS_LEAVES: { label:"Witness walks off",   start:180, short:"witness" },
+    VEHICLES_MOVE:  { label:"Cars get moved",      start:600, short:"cars" }
+  };
+  const ITEMS = [
+    { id:"wide",    label:"Wide shot, both cars",     value:4, perish:["VEHICLES_MOVE"], kind:"photo",
+      say:"Photograph both cars exactly where they are, before anyone moves them. Stand back about ten feet." },
+    { id:"plate",   label:"Their number plate",       value:5, perish:["OTHER_LEAVES"], kind:"photo", retryOnce:true,
+      say:"Now their number plate. Close enough to read it." },
+    { id:"driver",  label:"Driver name and licence",  value:5, perish:["OTHER_LEAVES"], kind:"field",
+      say:"Get his name and what is on his licence. Tell me when you have it." },
+    { id:"insurer", label:"Their insurance card",     value:5, perish:["OTHER_LEAVES"], kind:"photo",
+      say:"Photograph his insurance card, before he puts it away." },
+    { id:"witness", label:"Witness name and number",  value:5, perish:["WITNESS_LEAVES"], kind:"field",
+      say:"Get her name and a phone number now. A witness is the one thing you cannot get back afterwards." },
+    { id:"damage",  label:"Your own damage",          value:4, perish:[], kind:"photo",
+      say:"Close-ups of your own damage now — every panel that is marked." },
+    { id:"sight",   label:"Sight lines up the ramp",  value:3, perish:["VEHICLES_MOVE"], kind:"photo",
+      say:"One shot up the ramp, showing what you could see from where you were." },
+    { id:"account", label:"Your account",             value:4, perish:[], kind:"voice",
+      say:"Last thing. Tell me what happened, in your own words. About thirty seconds." }
+  ];
+  const HARD_STOPS = [
+    { test:/\b(hurt|pain|bleed|neck|chest|dizzy|injur|unconscious|head)\b/i,
+      line:"Stop. Hang up and call 911 now, and tell them what hurts.",
+      sub:"I am not going to ask you for anything else. Everything so far is saved.", why:"injury" },
+    { test:/\b(shout|aggress|angry|threat|violent|scared)\b/i,
+      line:"Get back in your car and lock the doors. Call 911.",
+      sub:"Do not keep photographing. Nothing here is worth this.", why:"hostile scene" },
+    { test:/\b(fire|smoke|fuel|petrol|leak|burning)\b/i,
+      line:"Move away from both cars now — at least fifty feet — then call 911.",
+      sub:"Leave everything where it is.", why:"fire risk" }
+  ];
+  const PROHIBITED = /\b(sorry|my fault|to blame|apolog|it was me)\b/i;
+  const KNOWLEDGE = [
+    { test:/\bpolice\b/i, say:"You are on private land — a car park — so city police usually will not attend.",
+      sub:"Call the centre's security office instead. They hold the CCTV and it is only kept a few days. (Duties §3746)" },
+    { test:/\b(excess|deductible|claim|worth)\b/i, say:"Your excess is $500 and your no-claims is protected.",
+      sub:"You have until 19:42 tomorrow to tell Meridian. (Policy §7.2)" },
+    { test:/\b(insurance|insurer|report|deadline|how long)\b/i, say:"Meridian need to hear about this within 24 hours.",
+      sub:"That is the notification clause in your policy. (Policy §7.2)" },
+    { test:/\b(exchange|details|legally|have to)\b/i, say:"You must exchange name, address and insurer details. He must too.",
+      sub:"Refusing is an offence. If he refuses, photograph the plate and call the non-emergency line." }
+  ];
+
+  /* ============================ ENGINE ============================ */
+  const S = {};
+  function reset(){
+    S.phase = "gate1";
+    S.clock = Object.fromEntries(Object.entries(EVENTS).map(([k,v]) => [k, v.start]));
+    S.items = ITEMS.map(i => ({ ...i, status:"pending", tries:0 }));
+    S.current = null; S.plan = []; S.tree = [];
+    el("thread").innerHTML = "";
+    el("dot").classList.remove("stopped"); el("meta").textContent = "collision";
+    node("gate", "Session opens", "It asks about injury before anything else.",
+         ["she says nothing → ask once more"]);
+    say("agent", "I'm here. First — are you hurt anywhere?");
+    render();
+  }
+  const windowOf = i => i.perish.length ? Math.min(...i.perish.map(e => S.clock[e])) : PERSIST;
+  const urgency  = i => i.value / Math.max(windowOf(i), 1);
+  function plan(){
+    S.plan = S.items.filter(i => i.status === "pending" || i.status === "failed")
+      .map(i => ({ item:i, w:windowOf(i), u:urgency(i) }))
+      .sort((a,b) => b.u - a.u || b.item.value - a.item.value);
+    return S.plan[0] ? S.plan[0].item : null;
+  }
+  function fire(evt, secs){
+    S.clock[evt] = Math.min(S.clock[evt], secs);
+    if (S.clock[evt] <= 0) S.items.forEach(i => {
+      if (i.status === "pending" && i.perish.includes(evt)) i.status = "unreachable";
+    });
+  }
+  function node(kind, label, why, alt){
+    S.tree.forEach(n => n.now = false);
+    S.tree.push({ kind, label, why, alt:alt || [], now:true });
+  }
+
+  /* ============================ TURN LOOP ============================ */
+  function submit(raw){
+    const text = (raw || "").trim();
+    if (!text || S.phase === "stopped") return;
+    say("user", text);
+
+    const stop = HARD_STOPS.find(h => h.test.test(text));
+    if (stop){
+      node("stop", "STAND DOWN — " + stop.why, "The guard ran before the planner, as it does every turn.");
+      S.phase = "stopped"; S.current = null;
+      el("dot").classList.add("stopped"); el("meta").textContent = "stood down";
+      say("alert", stop.line, stop.sub); render(); return;
+    }
+
+    if (PROHIBITED.test(text)){
+      node("warn", "Caught an apology", "Corrected her, and did not advance the plan.",
+           ["if she had not said it → next item"]);
+      say("warn", "Do not apologise. It is not politeness here, it is an admission.",
+          "Say instead: “Are you hurt? Let's exchange details and let the insurers sort it out.”");
+      if (S.current) say("agent", S.current.say);
+      render(); return;
+    }
+
+    let moved = null;
+    if (/\b(leaving|getting (back )?in|driving off|drive away|about to go)\b/i.test(text)){ fire("OTHER_LEAVES",45); moved="OTHER_LEAVES"; }
+    if (/\b(walking off|walking away|she'?s leaving|witness)\b/i.test(text)){ fire("WITNESS_LEAVES",30); moved="WITNESS_LEAVES"; }
+    if (/\b(mov(e|ed|ing) (the )?cars?|towed|pulled over)\b/i.test(text)){ fire("VEHICLES_MOVE",20); moved="VEHICLES_MOVE"; }
+
+    if (S.phase === "gate1"){
+      if (/\b(no|fine|okay|ok|not hurt|alright)\b/i.test(text)){
+        S.phase = "gate2";
+        node("gate", "Gate 1 passed — she is not hurt", "Now asks about everyone else.",
+             ["yes, or unclear → stand down"]);
+        say("agent", "Is anyone else hurt? The other driver, a passenger, anyone on foot?");
+      } else say("agent", "I need a yes or a no. Can you move your neck and both arms without pain?");
+      render(); return;
+    }
+    if (S.phase === "gate2"){
+      if (/\b(no|fine|okay|ok|looks? (okay|fine))\b/i.test(text)){
+        S.phase = "gate3";
+        node("gate", "Gate 2 passed — nobody else hurt", "Last gate before any evidence work.",
+             ["anyone hurt → stand down"]);
+        say("agent", "Good. Are you somewhere safe to stand?");
+      } else say("agent", "Is anyone else hurt? Yes or no.");
+      render(); return;
+    }
+    if (S.phase === "gate3"){
+      if (/\b(yes|yeah|kerb|curb|pavement|safe|side)\b/i.test(text)){
+        S.phase = "work";
+        node("gate", "Gate 3 passed — she is safe", "Scene work begins. The planner is consulted for the first time.",
+             ["still in the road → move first"]);
+        say("agent", "Then we have about eight minutes of useful work.");
+        next(null);
+      } else say("agent", "Move to the pavement first, away from the traffic. Tell me when you are there.");
+      render(); return;
+    }
+
+    const q = KNOWLEDGE.find(k => k.test.test(text));
+    if (q && /\?|^(do|what|should|can|how|is|am)\b/i.test(text)){
+      node("act", "Answered a question", "Retrieved, cited, then picked the instruction back up.");
+      say("agent", q.say, q.sub);
+      if (S.current) say("agent", S.current.say);
+      render(); return;
+    }
+
+    if (S.current && /\b(done|got (it|her|him|them)|have it|finished|yes|ok)\b/i.test(text)){
+      const it = S.items.find(i => i.id === S.current.id);
+      it.status = "captured"; S.current = null;
+      node("act", "Captured: " + it.label, "Marked in the ledger, and the plan recomputed.");
+      next(moved); render(); return;
+    }
+
+    if (moved) next(moved);
+    else if (S.current) say("agent", S.current.say, "Same instruction — take your time.");
+    else next(null);
+    render();
+  }
+
+  function next(moved){
+    const before = S.current && S.current.id;
+    const pick = plan();
+    if (!pick){
+      S.phase = "done"; S.current = null;
+      const got = S.items.filter(i => i.status === "captured").length;
+      const lost = S.items.filter(i => i.status === "unreachable");
+      node("act", "Scene closed — pack assembled", got + " of " + ITEMS.length + " items captured.");
+      say("agent", `That is everything reachable. ${got} of ${ITEMS.length} items captured.`,
+          lost.length ? "No longer gettable: " + lost.map(i => i.label.toLowerCase()).join(", ") + "."
+                      : "Nothing missing. Ready to send when you are.");
+      el("meta").textContent = "pack ready"; return;
+    }
+    S.current = pick;
+    if (moved){
+      const secs = S.clock[moved];
+      node("evt", EVENTS[moved].label, `Window cut to about ${secs}s — everything that dies with it was repriced.`,
+           before && before !== pick.id ? ["was doing: " + (ITEMS.find(i=>i.id===before)||{}).label] : []);
+      say("agent", pick.say, before && before !== pick.id
+        ? `Changed order — ${EVENTS[moved].label.toLowerCase()} in about ${secs}s, so this comes first now.`
+        : `Noted: ${EVENTS[moved].label.toLowerCase()}.`);
+    } else {
+      node("act", "Asked for: " + pick.label,
+           `Highest value ÷ time left (${pick.value} ÷ ${windowOf(pick) >= PERSIST ? "—" : windowOf(pick) + "s"}).`);
+      say("agent", pick.say);
+    }
+  }
+
+  function shoot(){
+    if (S.phase !== "work" || !S.current) return;
+    if (S.current.kind !== "photo"){ say("agent", "Not a photograph — " + S.current.say.toLowerCase()); return; }
+    const it = S.items.find(i => i.id === S.current.id);
+    it.tries++; say("user", "Photo taken");
+    if (it.retryOnce && it.tries === 1){
+      it.status = "failed";
+      node("warn", "Photo rejected", "Plate not legible. Item stays pending — the verify node sent it back.",
+           ["if it had passed → next item"]);
+      say("warn", "That plate is blurred — too dark to read.", "Closer, and hold still for a second.");
+      render(); return;
+    }
+    it.status = "captured"; S.current = null;
+    node("act", "Captured: " + it.label, "Verified, then the plan recomputed.");
+    say("agent", "That one works."); next(null); render();
+  }
+
+  /* ============================== VIEW ============================== */
+  function say(who, line, sub){
+    const d = document.createElement("div");
+    d.className = "msg " + (who === "user" ? "user" : who === "warn" ? "agent warn"
+                          : who === "alert" ? "agent alert" : "agent");
+    if (who === "warn")  d.innerHTML = '<span class="tag">Do not say that</span>';
+    if (who === "alert") d.innerHTML = '<span class="tag">Stand down</span>';
+    d.insertAdjacentText("beforeend", line);
+    if (sub){ const s = document.createElement("span"); s.className = "sub"; s.textContent = sub; d.appendChild(s); }
+    const t = el("thread"); t.appendChild(d); t.scrollTop = t.scrollHeight;
+    if (who !== "user") speak(line);
+  }
+
+  /* what she could usefully say next — the whole point of the right column */
+  function suggest(){
+    if (S.phase === "stopped") return [{ t:"Start over", k:"reset", c:"" }];
+    if (S.phase === "done")    return [{ t:"Send it to my insurer", k:"finish", c:"" }];
+    if (S.phase === "gate1")   return [
+      { t:"No, I'm fine — shaken, but fine", k:"answer", c:"" },
+      { t:"I don't know", k:"unsure", c:"jolt" },
+      { t:"My neck hurts", k:"injury", c:"danger" }];
+    if (S.phase === "gate2")   return [
+      { t:"No, he's out of his car and looks okay", k:"answer", c:"" },
+      { t:"I think he might be hurt", k:"injury", c:"danger" }];
+    if (S.phase === "gate3")   return [
+      { t:"Yes, I'm on the kerb", k:"answer", c:"" },
+      { t:"No, I'm still in the road", k:"unsafe", c:"jolt" }];
+    const out = [];
+    if (S.current){
+      out.push(S.current.kind === "photo"
+        ? { t:"Tap the amber camera on the phone", k:"do it", c:"", noSend:true }
+        : { t:"Done — got it", k:"done", c:"" });
+    }
+    out.push({ t:"He's getting back in his car", k:"event", c:"jolt" });
+    if (S.items.find(i => i.id === "witness" && i.status === "pending"))
+      out.push({ t:"She's walking off to her car", k:"event", c:"jolt" });
+    out.push({ t:"Do I need to call the police?", k:"ask", c:"" });
+    out.push({ t:"Sorry — I think it was my fault", k:"slip", c:"jolt" });
+    out.push({ t:"My neck hurts", k:"injury", c:"danger" });
+    return out;
+  }
+
+  function render(){
+    // your turn
+    el("opts").innerHTML = suggest().map(o =>
+      `<button class="${o.c}" data-t="${o.noSend ? "" : o.t.replace(/"/g,"&quot;")}"
+        ${o.k === "reset" ? 'data-act="reset"' : ""} ${o.noSend ? 'data-nosend="1"' : ""}>
+        <span class="k">${o.k}</span><span>${o.t}</span></button>`).join("");
+
+    // decision tree
+    el("tree").innerHTML = S.tree.map(n => `
+      <div class="nd ${n.kind}${n.now ? " now" : ""}">
+        <span class="bul"></span>
+        <div class="lb">${n.label}</div>
+        ${n.why ? `<div class="why">${n.why}</div>` : ""}
+        ${n.alt.length ? `<div class="alt">${n.alt.map(a => `<span>${a}</span>`).join("")}</div>` : ""}
+      </div>`).join("");
+
+    // scene state
+    const chips = Object.entries(EVENTS).map(([k,v]) => {
+      const left = S.clock[k];
+      const cls = left <= 0 ? "hot" : left <= 60 ? "hot" : left < v.start ? "warm" : "";
+      return `<span class="chip ${cls}">${v.short} ${left <= 0 ? "gone" : "~" + left + "s"}</span>`;
+    });
+    const got = S.items.filter(i => i.status === "captured").length;
+    const gone = S.items.filter(i => i.status === "unreachable").length;
+    chips.push(`<span class="chip ok">${got} of ${ITEMS.length} captured</span>`);
+    if (gone) chips.push(`<span class="chip hot">${gone} unreachable</span>`);
+    if (S.current) chips.push(`<span class="chip warm">now: ${S.current.label.toLowerCase()}</span>`);
+    el("state").innerHTML = chips.join("");
+  }
+
+  /* ============================ VOICE ============================
+     Two independent things, deliberately separated:
+       - speaking replies  (speechSynthesis) — works almost everywhere
+       - listening         (SpeechRecognition) — Chrome/Edge, and needs mic permission
+     Voice mode turns on BOTH, but speaking still works if listening is refused.
+     ============================================================== */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const TTS = window.speechSynthesis;
+  let rec = null, voiceOn = false, speaking = false, recWanted = false, muteUntil = 0;
+  const queue = [];
+
+  if (SR){
+    rec = new SR();
+    rec.lang = "en-US"; rec.continuous = true; rec.interimResults = false;
+    rec.onresult = e => {
+      if (speaking || Date.now() < muteUntil) return;      // never hear ourselves
+      let fin = "";
+      for (let i = e.resultIndex; i < e.results.length; i++)
+        if (e.results[i].isFinal) fin += e.results[i][0].transcript;
+      if (fin.trim()) submit(fin);
+    };
+    // browsers end recognition on their own after a silence; just resume it.
+    rec.onend = () => { if (recWanted) setTimeout(startRec, 250); };
+    rec.onerror = ev => {
+      if (ev.error === "not-allowed" || ev.error === "service-not-allowed"){
+        recWanted = false;
+        status("Replies are spoken. The microphone is blocked here — " +
+               "type in the phone, or open the file in its own tab to talk.");
+      }
+    };
+  }
+  function startRec(){ if (recWanted) { try { rec.start(); } catch {} } }
+
+  /* queue utterances rather than cancelling — two agent lines in one turn
+     both need to be heard, and cancel() was eating the first. */
+  function speak(line){
+    if (!voiceOn || !TTS) return;
+    queue.push(line); drain();
+  }
+  function drain(){
+    if (speaking || !queue.length || !TTS) return;
+    const u = new SpeechSynthesisUtterance(queue.shift());
+    u.rate = 1.02; u.pitch = .95;
+    speaking = true;
+    u.onend = u.onerror = () => {
+      speaking = false; muteUntil = Date.now() + 350; drain();
+    };
+    TTS.speak(u);
+  }
+
+  function status(msg){ el("vs").textContent = msg; }
+
+  el("mic").addEventListener("click", () => {
+    voiceOn = !voiceOn;
+    el("voice").classList.toggle("on", voiceOn);
+    if (voiceOn){
+      // unlock speech synthesis inside this user gesture — without this the
+      // first utterance is silently dropped in most browsers
+      if (TTS){ const w = new SpeechSynthesisUtterance(" "); w.volume = 0; TTS.speak(w); }
+      el("vt").textContent = "Voice on";
+      if (SR){
+        recWanted = true; startRec();
+        status("It answers out loud and keeps listening. Tap again to stop.");
+      } else {
+        status("Replies are spoken. This browser cannot listen — Chrome or Edge can. Type in the phone.");
+      }
+      speak("Voice is on. I am listening.");
+    } else {
+      recWanted = false;
+      try { rec && rec.stop(); } catch {}
+      queue.length = 0; speaking = false; if (TTS) TTS.cancel();
+      el("vt").textContent = "Talk to it";
+      status("One tap. It answers out loud and keeps listening — no buttons after that.");
+    }
+  });
+
+  /* ============================ WIRING ============================ */
+  el("opts").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.act === "reset") return reset();
+    if (b.dataset.nosend) return el("cam").focus();
+    submit(b.dataset.t);
+  });
+  el("in").addEventListener("keydown", e => {
+    if (e.key === "Enter"){ submit(e.target.value); e.target.value = ""; }
+  });
+  el("cam").addEventListener("click", shoot);
+  el("reset").addEventListener("click", reset);
+  let deviceKind = "ios", lightScreen = false;
+  function frame(kind){
+    const ios = kind === "ios";
+    deviceKind = kind;
+    el("phone").className = "phone " + kind + (lightScreen ? " lightscr" : "");
+    el("homebar").hidden = !ios; el("navbar").hidden = ios;
+    el("ios").setAttribute("aria-pressed", String(ios));
+    el("android").setAttribute("aria-pressed", String(!ios));
+    el("devnote").textContent = (ios ? "iPhone frame" : "Android frame") + " · " +
+      (lightScreen ? "light screen — easier to read indoors and in a demo room"
+                   : "dark screen — less glare at 19:42, in the rain");
+  }
+  el("ios").addEventListener("click", () => frame("ios"));
+  el("android").addEventListener("click", () => frame("android"));
+  function screenMode(light){
+    lightScreen = light;
+    el("scrlight").setAttribute("aria-pressed", String(light));
+    el("scrdark").setAttribute("aria-pressed", String(!light));
+    frame(deviceKind);
+  }
+  el("scrlight").addEventListener("click", () => screenMode(true));
+  el("scrdark").addEventListener("click", () => screenMode(false));
+
+  reset();
+})();
+</script>
+
+</body>
+</html>

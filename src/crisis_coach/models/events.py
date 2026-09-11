@@ -1,6 +1,7 @@
 """Validated events accepted by the conversation workflow."""
 from enum import StrEnum
 from .knowledge import KnowledgeContext
+from .incident_context import IncidentContext
 from typing import Annotated, Literal
 from uuid import uuid4
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
@@ -37,6 +38,10 @@ class ContextEvent(Event):
     kind: Literal["context"] = "context"
     context: KnowledgeContext
 
+class IncidentContextEvent(Event):
+    kind: Literal["incident_context"] = "incident_context"
+    context: IncidentContext
+
 class AIConsentEvent(Event):
     kind: Literal["ai_consent"] = "ai_consent"
     capability: Literal["text", "images"]
@@ -49,5 +54,5 @@ class TimerEvent(Event):
     kind: Literal["timer"] = "timer"
     timer_id: str = Field(min_length=1)
 
-InputEvent = Annotated[TextEvent | ControlEvent | TimerEvent | CaptureEvent | ReportEvent | QuestionEvent | ContextEvent | AIConsentEvent, Field(discriminator="kind")]
+InputEvent = Annotated[IncidentContextEvent | TextEvent | ControlEvent | TimerEvent | CaptureEvent | ReportEvent | QuestionEvent | ContextEvent | AIConsentEvent, Field(discriminator="kind")]
 INPUT_EVENT_ADAPTER = TypeAdapter(InputEvent)

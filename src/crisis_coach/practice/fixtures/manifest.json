@@ -1,0 +1,14 @@
+[
+  {
+    "file": "retake.png",
+    "sha256": "9f78e51fb392986e82c43ac737b271d51a116cfe2220154fe28b5f6d6460d097",
+    "origin": "Programmatically constructed solid-color synthetic PNG; contains no incident or personal data.",
+    "fake_verdict": "retake"
+  },
+  {
+    "file": "usable.png",
+    "sha256": "f31a90db518a84e7fbf30be2c64e6c62cd70b9405ca5e8278df0062b5b8d33fc",
+    "origin": "Programmatically constructed solid-color synthetic PNG; contains no incident or personal data.",
+    "fake_verdict": "usable"
+  }
+]

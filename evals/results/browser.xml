@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="15.724" timestamp="2026-09-11T19:21:50.641754-04:00" hostname="DESKTOP-GJ1P07V"><testcase classname="tests.browser.test_golden_browser" name="test_golden_browser_flow" time="15.700" /></testsuite></testsuites>

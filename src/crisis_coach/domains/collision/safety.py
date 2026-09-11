@@ -57,6 +57,7 @@ def classify_safety(text: str) -> SafetyVerdict:
 
 def stand_down(state: SceneState, reason: str) -> Instruction:
     state.status = SessionStatus.STOOD_DOWN
+    state.stand_down_kind = "injury"
     state.injury_reason = reason
     state.events.append(f"SAFETY_STAND_DOWN: {reason}")
     detail = (
@@ -87,6 +88,13 @@ def run_safety_guard(
     if verdict.injury:
         return stand_down(state, text.strip() or "injury reported")
 
+    from .danger import danger_kind, danger_stop, danger_recovery
+    kind = danger_kind(normalized)
+    if kind:
+        return danger_stop(state, kind, text)
+    if state.status is SessionStatus.STOOD_DOWN and state.stand_down_kind in ("fire", "hostility"):
+        return danger_recovery(state, text)
+
     if state.status is SessionStatus.STOOD_DOWN:
         already_asked = state.safety_gate is SafetyGate.MEDICAL_REENTRY
         state.safety_gate = SafetyGate.MEDICAL_REENTRY
@@ -102,6 +110,7 @@ def run_safety_guard(
         state.status = SessionStatus.ACTIVE
         state.safety_gate = SafetyGate.USER_INJURY
         state.unanswered_safety_turns = 0
+        state.stand_down_kind = None
         state.events.append("MEDICAL_REENTRY_CLEARED")
         return Instruction(text="Are you hurt anywhere?", expects="yes_or_no")
 

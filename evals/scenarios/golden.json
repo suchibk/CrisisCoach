@@ -1,0 +1,818 @@
+{
+  "version": 1,
+  "scenarios": [
+    {
+      "id": "gates-and-driver",
+      "source_cases": [
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6"
+      ],
+      "initial": {
+        "state": {
+          "safety_gate": "user_injury",
+          "current_evidence_id": null,
+          "evidence": {}
+        },
+        "contains": [
+          "hurt"
+        ]
+      },
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "He's getting back in his car",
+          "expect": {
+            "state": {
+              "current_evidence_id": "other_plate"
+            }
+          }
+        },
+        {
+          "text": "/collected other_plate SYNTHETIC-123",
+          "expect": {
+            "state": {
+              "evidence.other_plate.status": "reported",
+              "current_evidence_id": "other_insurance"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "photo-review",
+      "source_cases": [
+        "T7",
+        "T8"
+      ],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "He's getting back in his car",
+          "expect": {
+            "state": {
+              "current_evidence_id": "other_plate"
+            }
+          }
+        },
+        {
+          "action": "photo",
+          "photo": "retake",
+          "expect": {
+            "state": {
+              "evidence.other_plate.status": "pending",
+              "evidence.other_plate.failed_photo_reviews": 1
+            },
+            "contains": [
+              "dark"
+            ]
+          }
+        },
+        {
+          "action": "photo",
+          "photo": "usable",
+          "expect": {
+            "state": {
+              "evidence.other_plate.status": "verified",
+              "current_evidence_id": "other_insurance"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "neutral-account",
+      "source_cases": [
+        "T9"
+      ],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "Sorry — I think it was my fault",
+          "expect": {
+            "preserve_task": true,
+            "contains": [
+              "cannot determine fault"
+            ],
+            "excludes": [
+              "admission",
+              "Do not apologise"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "source-context",
+      "source_cases": [
+        "T10"
+      ],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "/ask Do I need to call the police?",
+          "expect": {
+            "preserve_task": true,
+            "state": {
+              "knowledge_answers.0.status": "not_found"
+            }
+          }
+        },
+        {
+          "text": "/knowledge-demo",
+          "expect": {
+            "preserve_task": true
+          }
+        },
+        {
+          "text": "/ask Do I need to call the police?",
+          "expect": {
+            "preserve_task": true,
+            "state": {
+              "knowledge_answers.1.status": "found"
+            },
+            "contains": [
+              "SYNTHETIC"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "injury",
+      "source_cases": [
+        "T11"
+      ],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "My neck hurts",
+          "expect": {
+            "state": {
+              "status": "stood_down",
+              "stand_down_kind": "injury"
+            },
+            "route": [
+              "safety"
+            ],
+            "tool_calls": 0
+          }
+        },
+        {
+          "text": "/export",
+          "expect": {
+            "state": {
+              "status": "stood_down",
+              "exports": []
+            },
+            "tool_calls": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "hostility",
+      "source_cases": [
+        "T12"
+      ],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "He's shouting at me",
+          "expect": {
+            "state": {
+              "status": "stood_down",
+              "stand_down_kind": "hostility"
+            },
+            "route": [
+              "safety"
+            ],
+            "tool_calls": 0
+          }
+        },
+        {
+          "text": "resume",
+          "expect": {
+            "state": {
+              "status": "stood_down"
+            },
+            "tool_calls": 0
+          }
+        },
+        {
+          "action": "reopen",
+          "expect": {
+            "state": {
+              "status": "stood_down",
+              "safety_gate": "danger_reentry"
+            }
+          }
+        },
+        {
+          "text": "I am away from the danger and safe now",
+          "expect": {
+            "state": {
+              "status": "active",
+              "safety_gate": "user_injury"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "fire",
+      "source_cases": [
+        "T12"
+      ],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "Smoke is coming from the engine",
+          "expect": {
+            "state": {
+              "status": "stood_down",
+              "stand_down_kind": "fire"
+            },
+            "tool_calls": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "negated-danger",
+      "source_cases": [
+        "T12"
+      ],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "He is not shouting at me. There is no smoke.",
+          "expect": {
+            "state": {
+              "status": "active"
+            }
+          }
+        },
+        {
+          "text": "What if the car is on fire?",
+          "expect": {
+            "state": {
+              "status": "active"
+            }
+          }
+        },
+        {
+          "text": "He said \"I am threatening you\" and now he is threatening me",
+          "expect": {
+            "state": {
+              "status": "stood_down"
+            },
+            "tool_calls": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "scuff-export",
+      "source_cases": [
+        "T13"
+      ],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "/scenario scuff",
+          "expect": {
+            "state": {
+              "current_evidence_id": "own_damage"
+            }
+          }
+        },
+        {
+          "action": "photo",
+          "photo": "usable",
+          "expect": {
+            "state": {
+              "current_evidence_id": "object_photo"
+            }
+          }
+        },
+        {
+          "action": "photo",
+          "photo": "usable",
+          "expect": {
+            "state": {
+              "current_evidence_id": "statement"
+            }
+          }
+        },
+        {
+          "text": "/statement statement I reversed into a bollard.",
+          "expect": {
+            "state": {
+              "current_evidence_id": null,
+              "evidence.statement.status": "collected"
+            }
+          }
+        },
+        {
+          "text": "/export",
+          "expect": {
+            "contains": [
+              "saved locally"
+            ],
+            "state": {
+              "exports.0.stored_items": 3,
+              "exports.0.required_items": 3
+            }
+          }
+        },
+        {
+          "action": "reopen",
+          "expect": {
+            "state": {
+              "safety_gate": "user_injury",
+              "exports.0.stored_items": 3
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "witness",
+      "source_cases": [],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "There's a witness walking away",
+          "expect": {
+            "state": {
+              "current_evidence_id": "witness_details"
+            }
+          }
+        },
+        {
+          "text": "/unavailable witness_details Witness declined",
+          "expect": {
+            "state": {
+              "evidence.witness_details.status": "unavailable"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "marcus",
+      "source_cases": [],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "/scenario unattended",
+          "expect": {
+            "state": {
+              "current_evidence_id": "footage_reference"
+            }
+          }
+        },
+        {
+          "text": "/collected footage_reference Camera near bay 12",
+          "expect": {
+            "state": {
+              "current_evidence_id": "own_damage"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "controls",
+      "source_cases": [],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "text": "repeat",
+          "expect": {
+            "preserve_task": true
+          }
+        },
+        {
+          "text": "pause",
+          "expect": {
+            "state": {
+              "status": "stopped"
+            }
+          }
+        },
+        {
+          "text": "My chest hurts",
+          "expect": {
+            "state": {
+              "status": "stood_down"
+            },
+            "route": [
+              "safety"
+            ],
+            "tool_calls": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "silence",
+      "source_cases": [],
+      "initial": {},
+      "steps": [
+        {
+          "action": "advance",
+          "seconds": 8,
+          "expect": {
+            "state": {
+              "status": "active"
+            }
+          }
+        },
+        {
+          "action": "advance",
+          "seconds": 8,
+          "expect": {
+            "state": {
+              "status": "stood_down"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "context",
+      "source_cases": [],
+      "initial": {},
+      "steps": [
+        {
+          "text": "No, I'm fine — shaken, but fine",
+          "expect": {
+            "state": {
+              "safety_gate": "other_injury",
+              "current_evidence_id": null
+            }
+          }
+        },
+        {
+          "text": "No, he's out of his car and looks okay",
+          "expect": {
+            "state": {
+              "safety_gate": "safe_location"
+            }
+          }
+        },
+        {
+          "text": "Yes, I'm on the kerb",
+          "expect": {
+            "state": {
+              "safety_gate": "cleared",
+              "current_evidence_id": "wide_scene_photo"
+            }
+          }
+        },
+        {
+          "action": "event",
+          "event": {
+            "kind": "incident_context",
+            "context": {
+              "location": "Synthetic Oak Street",
+              "weather": "Rain",
+              "occurred_at": "2026-09-11T08:00:00-04:00"
+            }
+          },
+          "expect": {
+            "preserve_task": true,
+            "state": {
+              "incident_context.location": "Synthetic Oak Street"
+            }
+          }
+        },
+        {
+          "action": "reopen",
+          "expect": {
+            "state": {
+              "incident_context.location": "Synthetic Oak Street",
+              "safety_gate": "user_injury"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

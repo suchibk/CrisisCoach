@@ -24,6 +24,9 @@ class CollisionPack:
         return Instruction(text="Are you hurt anywhere?", expects="yes_or_no")
 
     def recovery(self, state: SceneState) -> Instruction:
+        if state.status is SessionStatus.STOOD_DOWN and state.stand_down_kind in ("fire", "hostility"):
+            from .danger import danger_recovery
+            return danger_recovery(state)
         if state.status is SessionStatus.STOOD_DOWN:
             state.safety_gate = SafetyGate.MEDICAL_REENTRY
             return Instruction(text="Before anything else - has someone medical checked you?", expects="yes_or_no")
@@ -39,6 +42,10 @@ class CollisionPack:
     def preempt(self, state: SceneState, text: str) -> Instruction | None:
         if classify_safety(text).injury:
             return stand_down(state, text)
+        from .danger import danger_kind, danger_stop
+        kind = danger_kind(text)
+        if kind:
+            return danger_stop(state, kind, text)
         return None
 
     def guard(self, state: SceneState, text: str) -> Instruction | None:

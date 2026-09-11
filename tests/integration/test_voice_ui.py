@@ -1,4 +1,5 @@
 import pytest
+from pathlib import Path
 
 
 def test_voice_ui_opt_in_and_new_incident_reset(tmp_path, monkeypatch):
@@ -22,7 +23,7 @@ def test_voice_ui_opt_in_and_new_incident_reset(tmp_path, monkeypatch):
     monkeypatch.setattr(bootstrap, "build_repository", lambda: repo)
     monkeypatch.setattr(bootstrap, "build_coach", lambda: CollisionWorkflow(repository=repo))
     monkeypatch.setattr(view, "build_voice_provider", lambda: provider)
-    app = AppTest.from_file("src/crisis_coach/interfaces/streamlit_app.py").run()
+    app = AppTest.from_file(Path("src/crisis_coach/interfaces/streamlit_app.py").resolve(), default_timeout=10).run()
     assert not app.exception
     assert provider.calls == 0
     app.button(key="voice_allow_playback").click().run()

@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "checks": [
+    "isolated installed-wheel imports",
+    "practice image fixtures",
+    "danger policy resource",
+    "SQLite migrations",
+    "capture",
+    "DOCX export"
+  ]
+}
