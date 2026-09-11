@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from ....ai.config import AISettings
-from ....ai.contracts import AIInjuryResult
+from .contracts import AIInjuryResult
+from ....ai.providers.nebius import build_chat_model
 
 
 class NebiusInjuryClassifier:
@@ -12,21 +13,7 @@ class NebiusInjuryClassifier:
     """
 
     def __init__(self, settings: AISettings) -> None:
-        try:
-            from langchain_openai import ChatOpenAI
-        except ImportError as exc:
-            raise RuntimeError(
-                'AI support is not installed; run: pip install -e ".[agent]"'
-            ) from exc
-
-        model = ChatOpenAI(
-            api_key=settings.api_key,
-            base_url=settings.base_url,
-            model=settings.model,
-            temperature=0,
-            timeout=settings.timeout_seconds,
-            max_retries=0,
-        )
+        model = build_chat_model(settings)
         self._classifier = model.with_structured_output(AIInjuryResult)
 
     def classify_injury(self, text: str) -> AIInjuryResult:

@@ -1,0 +1,142 @@
+{
+  "version": "1",
+  "items": [
+    {
+      "item_id": "wide_scene_photo",
+      "label": "Wide scene",
+      "instruction": "Photograph both cars from a safe position, with both vehicles and the gap between them in one shot.",
+      "expects": "photo",
+      "value": 5,
+      "scenarios": [
+        "full"
+      ],
+      "requires_driver": true,
+      "requires_witness": false
+    },
+    {
+      "item_id": "witness_details",
+      "label": "Witness details",
+      "instruction": "Ask the witness for their name and a phone number, if it is safe to do so.",
+      "expects": "text",
+      "value": 5,
+      "scenarios": [
+        "full",
+        "unattended"
+      ],
+      "requires_driver": false,
+      "requires_witness": true
+    },
+    {
+      "item_id": "other_plate",
+      "label": "Other vehicle plate",
+      "instruction": "Photograph the other vehicle plate from where you can safely stand.",
+      "expects": "photo",
+      "value": 5,
+      "scenarios": [
+        "full"
+      ],
+      "requires_driver": true,
+      "requires_witness": false
+    },
+    {
+      "item_id": "other_insurance",
+      "label": "Other driver insurance",
+      "instruction": "Ask for the other driver insurance details. Record them only if they agree.",
+      "expects": "text",
+      "value": 4,
+      "scenarios": [
+        "full"
+      ],
+      "requires_driver": true,
+      "requires_witness": false
+    },
+    {
+      "item_id": "other_vehicle",
+      "label": "Other vehicle damage",
+      "instruction": "Photograph the other vehicle damage from a safe position.",
+      "expects": "photo",
+      "value": 3,
+      "scenarios": [
+        "full"
+      ],
+      "requires_driver": true,
+      "requires_witness": false
+    },
+    {
+      "item_id": "own_damage",
+      "label": "Your vehicle damage",
+      "instruction": "Photograph your vehicle damage from a safe position.",
+      "expects": "photo",
+      "value": 4,
+      "scenarios": [
+        "full",
+        "unattended",
+        "scuff"
+      ],
+      "requires_driver": false,
+      "requires_witness": false
+    },
+    {
+      "item_id": "parking_location",
+      "label": "Parking location",
+      "instruction": "Photograph the parking bay number and nearby location marker in one shot.",
+      "expects": "photo",
+      "value": 4,
+      "scenarios": [
+        "unattended"
+      ],
+      "requires_driver": false,
+      "requires_witness": false
+    },
+    {
+      "item_id": "footage_reference",
+      "label": "Potential footage",
+      "instruction": "Record the location of any visible camera and the contact details of the site operator.",
+      "expects": "text",
+      "value": 5,
+      "scenarios": [
+        "unattended"
+      ],
+      "requires_driver": false,
+      "requires_witness": false
+    },
+    {
+      "item_id": "object_photo",
+      "label": "Object involved",
+      "instruction": "Photograph the bollard or other object involved from a safe position.",
+      "expects": "photo",
+      "value": 3,
+      "scenarios": [
+        "scuff"
+      ],
+      "requires_driver": false,
+      "requires_witness": false
+    },
+    {
+      "item_id": "sight_lines",
+      "label": "Scene visibility",
+      "instruction": "Photograph the view along your approach from a safe position.",
+      "expects": "photo",
+      "value": 2,
+      "scenarios": [
+        "full"
+      ],
+      "requires_driver": false,
+      "requires_witness": false
+    },
+    {
+      "item_id": "statement",
+      "label": "Your account",
+      "instruction": "Describe what happened in your own words. Include only what you remember.",
+      "expects": "text",
+      "value": 2,
+      "scenarios": [
+        "full",
+        "unattended",
+        "scuff"
+      ],
+      "requires_driver": false,
+      "requires_witness": false
+    }
+  ]
+}

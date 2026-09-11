@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "passages": [
+    {
+      "synthetic": true,
+      "reviewed": true,
+      "effective_from": "2026-01-01",
+      "effective_until": "2026-12-31",
+      "source_id": "demo-duty-exchange",
+      "title": "SYNTHETIC training-jurisdiction rules",
+      "section": "D1",
+      "source_uri": "demo:training-rules-v1#D1",
+      "corpus": "duties",
+      "jurisdiction": "DEMO",
+      "topics": [
+        "exchange"
+      ],
+      "text": "Training scenario only: The parties exchange their names and vehicle details after confirming it is safe. This is a fictional exercise rule, not a statement of law."
+    },
+    {
+      "synthetic": true,
+      "reviewed": true,
+      "effective_from": "2026-01-01",
+      "effective_until": "2026-12-31",
+      "source_id": "demo-duty-police",
+      "title": "SYNTHETIC training-jurisdiction rules",
+      "section": "D2",
+      "source_uri": "demo:training-rules-v1#D2",
+      "corpus": "duties",
+      "jurisdiction": "DEMO",
+      "topics": [
+        "police"
+      ],
+      "text": "Training scenario only: Record whether a police reference was provided. These fictional training rules do not establish a legal obligation to call the police."
+    }
+  ]
+}

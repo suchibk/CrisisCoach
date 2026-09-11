@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "passages": [
+    {
+      "synthetic": true,
+      "reviewed": true,
+      "effective_from": "2026-01-01",
+      "effective_until": "2026-12-31",
+      "source_id": "demo-meridian-notification",
+      "title": "SYNTHETIC Meridian demonstration policy",
+      "section": "7.2",
+      "source_uri": "demo:meridian-policy-v1#7.2",
+      "corpus": "policy",
+      "policy_id": "demo-meridian",
+      "topics": [
+        "notification"
+      ],
+      "text": "Demonstration wording only: Notify Meridian Mutual of any collision within 24 hours of the incident. This fictional clause does not describe real insurance coverage."
+    },
+    {
+      "synthetic": true,
+      "reviewed": true,
+      "effective_from": "2026-01-01",
+      "effective_until": "2026-12-31",
+      "source_id": "demo-meridian-excess",
+      "title": "SYNTHETIC Meridian demonstration policy",
+      "section": "Schedule",
+      "source_uri": "demo:meridian-policy-v1#schedule",
+      "corpus": "policy",
+      "policy_id": "demo-meridian",
+      "topics": [
+        "excess"
+      ],
+      "text": "Demonstration wording only: The listed collision excess is $500. This fictional schedule does not determine whether a claim should be made."
+    }
+  ]
+}

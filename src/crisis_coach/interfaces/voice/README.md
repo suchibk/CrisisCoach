@@ -1,0 +1,11 @@
+# ElevenLabs voice
+
+Install `pip install -e ".[ui,voice]"`, set `ELEVENLABS_API_KEY` and `ELEVENLABS_VOICE_ID` in the server environment, and run `streamlit run src/crisis_coach/interfaces/streamlit_app.py`. Use a voice available to your ElevenLabs account. Optional model overrides are `ELEVENLABS_TTS_MODEL` (default `eleven_multilingual_v2`) and `ELEVENLABS_STT_MODEL` (default `scribe_v2`). `.env` is not loaded automatically. Credentials stay on the Python server.
+
+In **ElevenLabs voice**, enable playback and/or transcription. Prepare the latest response, then play it using the audio player. Replay is local to the browser session. `slow down` supplies the existing 0.75 speech rate. Text is submitted unchanged to synthesis; pronunciation remains provider-controlled. Record up to 30 seconds, explicitly send the recording, review/edit the transcript, and submit it through the normal workflow. Recognition never directly answers a safety question. Typed controls remain available.
+
+Requests run in a background thread with HTTP timeouts, a response size limit, no retries, and only one outstanding request per browser session. Safety polling continues; new responses discard stale results, so a timer reminder can require recording again. Disabling voice or opening/starting an incident clears transient outputs; opening/starting also resets permission. A request already sent cannot be recalled. The application does not save audio as evidence, export it, or send it to LangSmith. Audio exists transiently in server/browser memory; submitted transcript text is persisted like typed input. ElevenLabs may retain requests under its account policies; this does not claim zero provider retention.
+
+This increment is push-to-record plus manual playback, not full-duplex streaming or a hands-free agent. CLI remains text-only. Browser microphone access requires localhost or HTTPS and browser permission. Interactive microphone/playback and live account compatibility require separate validation. Tests use mock transports without paid calls.
+
+References: [speech synthesis](https://elevenlabs.io/docs/api-reference/text-to-speech/convert), [transcription](https://elevenlabs.io/docs/api-reference/speech-to-text/convert), [Streamlit recording](https://docs.streamlit.io/develop/api-reference/widgets/st.audio_input).
