@@ -9,3 +9,5 @@ Requests run in a background thread with HTTP timeouts, a response size limit, n
 This increment is push-to-record plus manual playback, not full-duplex streaming or a hands-free agent. CLI remains text-only. Browser microphone access requires localhost or HTTPS and browser permission. Interactive microphone/playback and live account compatibility require separate validation. Tests use mock transports without paid calls.
 
 References: [speech synthesis](https://elevenlabs.io/docs/api-reference/text-to-speech/convert), [transcription](https://elevenlabs.io/docs/api-reference/speech-to-text/convert), [Streamlit recording](https://docs.streamlit.io/develop/api-reference/widgets/st.audio_input).
+
+For session-only UI configuration and the live walkthrough, see [the demo runbook](../../../../demo/README.md). Automatic speech is optional after playback is enabled; browser autoplay restrictions may require pressing Play.

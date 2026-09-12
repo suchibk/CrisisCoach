@@ -3,12 +3,13 @@ import streamlit as st
 from pydantic import ValidationError
 from .contracts import Recording, VoiceError
 from .controller import VoiceController
-from .elevenlabs import build_voice_provider
+from .elevenlabs import build_voice_provider, ElevenLabsSettings, ElevenLabsVoice
 from ...models import SessionStatus, SafetyGate
 from ...persistence.contracts import PersistenceError
 
 
 def reset_voice():
+    st.session_state.pop("voice_auto", None)
     controller = st.session_state.get("voice_controller")
     if controller is not None:
         controller.reset()
@@ -16,15 +17,40 @@ def reset_voice():
 
 @st.fragment(run_every="1s")
 def render_voice():
-    with st.expander("ElevenLabs voice"):
+    with st.expander("ElevenLabs voice", expanded=True):
         controller = st.session_state.get("voice_controller")
         if controller is None:
-            provider = build_voice_provider()
-            if provider is None:
-                st.caption("Voice is optional. Configure ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID and install the voice extra, then restart the app.")
+            provider = st.session_state.get("voice_session_provider")
+            if provider is None and not st.session_state.get("voice_disconnected"):
+                provider = build_voice_provider()
+            if not provider:
+                st.caption("Connect ElevenLabs for spoken coaching and microphone answers. Settings stay in this browser session and are not saved to disk.")
+                with st.form("voice_setup", clear_on_submit=True):
+                    api_key = st.text_input("ElevenLabs API key", type="password")
+                    voice_id = st.text_input("ElevenLabs voice ID", help="Copy a voice ID from your ElevenLabs voice library.")
+                    connect = st.form_submit_button("Connect ElevenLabs")
+                if connect:
+                    try:
+                        settings = ElevenLabsSettings(api_key=api_key.strip(), voice_id=voice_id.strip())
+                        st.session_state.voice_session_provider = ElevenLabsVoice(settings)
+                        st.session_state.voice_disconnected = False
+                    except ValidationError:
+                        st.error("Enter a nonblank API key and a valid voice ID from your ElevenLabs account.")
+                    else:
+                        st.rerun()
                 return
             controller = VoiceController(provider)
             st.session_state.voice_controller = controller
+        st.caption("ElevenLabs configured · Use playback to verify your account and voice.")
+        if st.button("Disconnect / change voice", key="voice_disconnect"):
+            controller.reset()
+            st.session_state.pop("voice_controller", None)
+            st.session_state.pop("voice_session_provider", None)
+            st.session_state.pop("voice_auto", None)
+            # Suppress environment configuration until the user connects again.
+            st.session_state.voice_session_provider = False
+            st.session_state.voice_disconnected = True
+            st.rerun()
         scene = st.session_state.scene
         controller.set_context((scene.incident_id, len(st.session_state.messages)))
         controller.poll()
@@ -40,14 +66,17 @@ def render_voice():
         if controller.busy:
             st.caption("Voice request in progress. Text controls and safety timers remain active.")
         if controller.playback_allowed:
+            automatic = st.checkbox("Automatically speak new coach responses", key="voice_auto")
             instruction = st.session_state.get("latest_reply", scene.last_instruction)
+            if automatic and instruction and not controller.busy and controller.audio is None and controller.error is None and controller.transcript is None:
+                controller.speak(instruction)
             if instruction and st.button("Prepare spoken response", disabled=controller.busy, key="voice_speak"):
                 try:
                     controller.speak(instruction)
                 except VoiceError as exc:
                     st.warning(str(exc))
             if controller.audio:
-                st.audio(controller.audio.data, format=controller.audio.media_type)
+                st.audio(controller.audio.data, format=controller.audio.media_type, autoplay=automatic)
                 st.caption("Use the player to play, pause, or replay without another API call.")
         can_answer = scene.status is not SessionStatus.STOOD_DOWN or scene.safety_gate in (SafetyGate.MEDICAL_REENTRY, SafetyGate.DANGER_REENTRY)
         if controller.microphone_allowed and can_answer:

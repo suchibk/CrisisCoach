@@ -73,3 +73,34 @@ def test_injury_preempts_medical_reentry():
     coach.turn(state, "")
     assert coach.turn(state, "Yes, but my chest still hurts").terminate
     assert state.status is SessionStatus.STOOD_DOWN
+
+
+@pytest.mark.parametrize("answer", ["No", "No.", "Nope", "Not yet", "No, nobody has checked me"])
+def test_medical_reentry_acknowledges_no_and_stays_blocked(answer):
+    coach = CollisionWorkflow()
+    state, _ = coach.start()
+    coach.turn(state, "My chest hurts")
+    question = coach.turn(state, "I want to continue")
+    assert "medical checked" in question.text
+    for _ in range(2):
+        reply = coach.turn(state, answer)
+        assert "Understood" in reply.text
+        assert "Coaching remains paused" in reply.text
+        assert "?" not in reply.text
+        assert state.status is SessionStatus.STOOD_DOWN
+        assert state.safety_gate is SafetyGate.MEDICAL_REENTRY
+        assert not state.evidence_requests
+        assert "MEDICAL_REENTRY_CLEARED" not in state.events
+    reply = coach.turn(state, "Yes, a doctor checked me")
+    assert reply.text == "Are you hurt anywhere?"
+    assert state.status is SessionStatus.ACTIVE
+
+
+def test_unclear_medical_reentry_answer_still_asks_question():
+    coach = CollisionWorkflow()
+    state, _ = coach.start()
+    coach.turn(state, "My chest hurts")
+    coach.turn(state, "I want to continue")
+    reply = coach.turn(state, "Maybe")
+    assert "medical checked" in reply.text
+    assert state.status is SessionStatus.STOOD_DOWN

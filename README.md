@@ -4,6 +4,8 @@ Python prototype of the local-first car-collision coach described in the project
 
 ## Quick start
 
+For the UI with real voice, follow the [ElevenLabs setup and illustrated demo guide](demo/README.md): `.env` configuration, Windows launch commands, microphone/playback tests, and Dana happy/unknown paths.
+
 ```powershell
 cd "Final Project"
 python -m venv .venv
@@ -188,7 +190,7 @@ Local capture accepts up to 20 MiB; AI review accepts up to 5 MiB. Calls use the
 
 Install `pip install -e ".[ui,voice]"` and set `ELEVENLABS_API_KEY` and `ELEVENLABS_VOICE_ID` in your environment. Restart Streamlit, open **ElevenLabs voice**, and enable playback or transcription. Record a short answer, send it for transcription, review it, and submit. Spoken responses preserve the coach text and slow-down setting. Voice is optional and calls require explicit controls; no calls happen just because credentials are configured.
 
-See [voice setup and behavior](src/crisis_coach/interfaces/voice/README.md) for limits and data handling. This is push-to-record with manual playback; continuous hands-free conversation remains future work.
+See [voice setup and behavior](src/crisis_coach/interfaces/voice/README.md) for limits and data handling. Playback supports manual preparation or opt-in automatic speech for new responses. See the [illustrated setup and testing guide](demo/README.md). This is push-to-record; continuous hands-free conversation remains future work.
 
 ## Incident time, location and weather
 

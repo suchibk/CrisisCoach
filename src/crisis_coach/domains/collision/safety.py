@@ -101,6 +101,18 @@ def run_safety_guard(
         affirmative = bool(re.fullmatch(r"yes[.!]?", normalized) or re.match(r"^yes[, ]", normalized))
         explicit_check = bool(re.search(r"\b(?:doctor|paramedic|medic|nurse|hospital|medical)\b", normalized)) and bool(re.search(r"\b(?:checked|examined|assessed|cleared|seen)\b", normalized))
         denied = bool(re.search(r"\b(?:no|not|never|maybe|unsure)\b", normalized))
+        # A negative answer to the re-entry question is understood, not missing.
+        # Keep the safety restriction without asking the same question again.
+        negative_answer = bool(re.match(r"^(?:no|nope|not yet)\b", normalized))
+        if already_asked and negative_answer:
+            return Instruction(
+                text=(
+                    "Understood - you haven't been medically checked. "
+                    "Coaching remains paused until a medical professional has checked you. "
+                    "Let me know once that has happened."
+                ),
+                reason="medical clearance required after stand-down",
+            )
         if not already_asked or denied or not (affirmative or explicit_check):
             return Instruction(
                 text="Before anything else - has someone medical checked you?",

@@ -38,7 +38,40 @@ def test_voice_ui_opt_in_and_new_incident_reset(tmp_path, monkeypatch):
     assert not app.exception
     assert provider.calls == 1
     assert app.session_state.voice_controller.audio is not None
+    app.checkbox(key="voice_auto").check().run()
+    app.run()
+    assert provider.calls == 1  # Cached audio is not synthesized on fragment reruns.
+    app.session_state.messages.append(("assistant", "Next coach response"))
+    app.run()
+    pending = app.session_state.voice_controller.pending
+    if pending:
+        pending.result(timeout=2)
+    app.run()
+    assert not app.exception
+    assert provider.calls == 2
+    assert app.session_state.voice_controller.audio is not None
     next(button for button in app.button if button.label == "New incident").click().run()
     assert not app.exception
     assert not app.session_state.voice_controller.playback_allowed
     assert app.session_state.voice_controller.audio is None
+
+
+def test_voice_setup_and_disconnect(tmp_path, monkeypatch):
+    pytest.importorskip("streamlit")
+    from streamlit.testing.v1 import AppTest
+    import crisis_coach.interfaces.voice.view as view
+    monkeypatch.setenv("CRISIS_COACH_DATA_DIR", str(tmp_path))
+    monkeypatch.setattr(view, "build_voice_provider", lambda: None)
+    app = AppTest.from_file(Path("src/crisis_coach/interfaces/streamlit_app.py").resolve(), default_timeout=10).run()
+    assert not app.exception
+    app.text_input[0].set_value("demo-secret")
+    app.text_input[1].set_value("demo_voice")
+    next(b for b in app.button if b.label == "Connect ElevenLabs").click().run()
+    assert not app.exception
+    assert app.session_state.voice_controller.provider.settings.voice_id == "demo_voice"
+    assert not app.session_state.voice_controller.playback_allowed
+    assert "demo-secret" not in repr(app.session_state.voice_controller.provider.settings)
+    app.button(key="voice_disconnect").click().run()
+    assert not app.exception
+    assert any(b.label == "Connect ElevenLabs" for b in app.button)
+    assert "voice_controller" not in app.session_state
