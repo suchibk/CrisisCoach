@@ -113,7 +113,7 @@ The final response starts **Understood - you haven't been medically checked.** I
 
 ## Live timing and rehearsal
 
-The live app retries unanswered safety prompts after eight seconds and can stand down after another unanswered interval. These timers continue during voice preparation, recording, and transcript review. Long narration can therefore interrupt the happy path. Rehearse short answers; use typed answers for a quick workflow check and test transcription separately if the round trip takes too long. Use **Pause** while explaining, then resume when ready. Practice mode offers a manually advanced clock for offline rehearsal, but cannot demonstrate ElevenLabs.
+The live app retries unanswered safety prompts after eight seconds and pauses the safety check after another unanswered interval. Automatic inactivity checks wait while recording transcription is enabled, so recording and transcript review are not interrupted. With transcription disabled, the timers continue during playback preparation. Long narration can therefore interrupt the happy path. Rehearse short answers; use typed answers for a quick workflow check and test transcription separately if the round trip takes too long. Use **Pause** while explaining, then resume when ready. Practice mode offers a manually advanced clock for offline rehearsal, but cannot demonstrate ElevenLabs.
 
 ## Troubleshooting
 
@@ -127,7 +127,7 @@ The live app retries unanswered safety prompts after eight seconds and can stand
 | ElevenLabs unavailable warning | Check key permissions, voice access, account credits, and network access. Retry Prepare spoken response or use Disconnect / change voice. |
 | Player appears but nothing is audible | Press Play, raise player/system volume, unmute the browser tab, and check the Windows output device. Autoplay may be blocked. |
 | Microphone does not work | Allow browser microphone access, select a working input device, and use localhost or HTTPS. |
-| Coach unexpectedly stops during setup | Live safety timers expired. Start a new synthetic incident when ready to answer. |
+| Coach unexpectedly stops during setup | Live safety timers expired. Click Resume when ready to answer. |
 | Medical-check question on an existing incident | That incident retains its stand-down state. No keeps coaching paused; use New incident for a fresh fictional walkthrough. |
 
 ## Automated checks

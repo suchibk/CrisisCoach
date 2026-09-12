@@ -99,14 +99,14 @@ class CollisionPack:
         return Instruction(text="Paused. Say go on whenever you're ready.")
 
     def silence(self, state: SceneState) -> Instruction:
-        if state.safety_gate is SafetyGate.SAFE_LOCATION:
-            state.unanswered_safety_turns += 1
-            if state.unanswered_safety_turns >= 2:
-                return stand_down(state, "safety question unanswered")
-        reply = self.guard(state, "")
-        if reply is None:
-            raise RuntimeError("Silence handler requires an unanswered safety gate")
-        return reply
+        # Inactivity is not an injury report: allow time to type or prepare voice.
+        state.unanswered_safety_turns += 1
+        if state.unanswered_safety_turns >= 2:
+            state.status = SessionStatus.STOPPED
+            state.unanswered_safety_turns = 0
+            state.events.append("SAFETY_CHECK_PAUSED: no answer")
+            return Instruction(text="Safety check paused while you were away. Resume when you are ready to answer.")
+        return state.last_instruction or self.opening(state)
 
     def is_cleared(self, state: SceneState) -> bool:
         return state.safety_gate is SafetyGate.CLEARED

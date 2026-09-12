@@ -34,7 +34,7 @@ Run tests with `pytest`.
 - Every turn enters a deterministic safety guard before any planner.
 - The scene cannot advance until the user's injury and other-person injury gates are answered.
 - An injury signal immediately ends evidence collection and directs the user to call 911.
-- Two unanswered safety prompts are treated as unsafe and cause the same stand-down.
+- Two explicitly uncertain safety answers cause stand-down; inactivity pauses the check without claiming an injury.
 - Reopening a stood-down incident asks for medical clearance before doing anything else.
 - No network, API key, model, or vector store is required for the safety path.
 
@@ -88,7 +88,7 @@ Safe-location answers are interpreted separately from injury answers. Evidence r
 
 Use `stop` or `pause`, `go on` or `resume`, `repeat`, and `slow down`. Pause retains the current question. Repeat preserves its exact words. Slow-down metadata controls optional ElevenLabs playback; text is unchanged.
 
-The CLI and active Streamlit page now poll workflow timers: eight seconds per unanswered safety prompt (one retry, then stand-down), and thirty seconds for evidence reminders. Timers stop while paused or stood down. CLI and Streamlit save incidents to SQLite. Process-local deadlines are discarded and safety is rechecked when reopening; timers do not run while the app is closed. Streamlit polling requires the page to remain connected.
+The CLI and active Streamlit page now poll workflow timers: eight seconds per unanswered safety prompt (one retry, then a resumable pause), and thirty seconds for evidence reminders. Timers stop while paused or stood down. CLI and Streamlit save incidents to SQLite. Process-local deadlines are discarded and safety is rechecked when reopening; timers do not run while the app is closed. Streamlit polling requires the page to remain connected.
 
 ## Saved incidents and recovery
 

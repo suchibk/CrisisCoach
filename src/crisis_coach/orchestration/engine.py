@@ -158,7 +158,11 @@ class WorkflowEngine:
                 self._publish(state, reminder)
                 state.last_instruction = current
                 return reminder
-            return self._publish(state, self.pack.silence(state))
+            current = state.last_instruction
+            reply = self._publish(state, self.pack.silence(state))
+            if state.status is SessionStatus.STOPPED:
+                state.last_instruction = current
+            return reply
 
         state.last_event_id = event.event_id
         control = event.control if isinstance(event, ControlEvent) else None

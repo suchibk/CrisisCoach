@@ -64,7 +64,7 @@ def render_voice():
         if controller.error:
             st.warning(controller.error)
         if controller.busy:
-            st.caption("Voice request in progress. Text controls and safety timers remain active.")
+            st.caption("Voice request in progress. Wait for it to finish before sending a recording.")
         if controller.playback_allowed:
             automatic = st.checkbox("Automatically speak new coach responses", key="voice_auto")
             instruction = st.session_state.get("latest_reply", scene.last_instruction)
@@ -80,6 +80,9 @@ def render_voice():
                 st.caption("Use the player to play, pause, or replay without another API call.")
         can_answer = scene.status is not SessionStatus.STOOD_DOWN or scene.safety_gate in (SafetyGate.MEDICAL_REENTRY, SafetyGate.DANGER_REENTRY)
         if controller.microphone_allowed and can_answer:
+            st.caption("Automatic inactivity checks wait while recording transcription is enabled. Record, stop, then send your recording for review.")
+            if scene.status is SessionStatus.STOPPED:
+                st.info("The coach is paused. Click Resume before recording your answer.")
             recording = st.audio_input("Record a short answer (maximum 30 seconds)", key=f"voice_record_{token}")
             if st.button("Send recording to ElevenLabs", disabled=recording is None or controller.busy, key="voice_transcribe"):
                 try:

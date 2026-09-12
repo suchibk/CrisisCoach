@@ -75,3 +75,39 @@ def test_voice_setup_and_disconnect(tmp_path, monkeypatch):
     assert not app.exception
     assert any(b.label == "Connect ElevenLabs" for b in app.button)
     assert "voice_controller" not in app.session_state
+
+
+def test_microphone_keeps_timer_from_discarding_transcript(tmp_path, monkeypatch):
+    pytest.importorskip("streamlit")
+    from streamlit.testing.v1 import AppTest
+    from crisis_coach import CollisionWorkflow, SessionStatus
+    from crisis_coach.models import SafetyGate
+    from crisis_coach.interfaces.voice.contracts import Transcript
+    import crisis_coach.bootstrap as bootstrap
+    import crisis_coach.interfaces.voice.view as view
+
+    class Clock:
+        time = 0
+        def now(self): return self.time
+
+    clock = Clock()
+    monkeypatch.setenv("CRISIS_COACH_DATA_DIR", str(tmp_path))
+    monkeypatch.setattr(bootstrap, "build_coach", lambda: CollisionWorkflow(clock=clock))
+    monkeypatch.setattr(view, "build_voice_provider", lambda: object())
+    app = AppTest.from_file(Path("src/crisis_coach/interfaces/streamlit_app.py").resolve(), default_timeout=10).run()
+    app.button(key="voice_allow_microphone").click().run()
+    controller = app.session_state.voice_controller
+    controller.transcript = Transcript(text="I am not hurt")
+    generation = controller.generation
+    for elapsed in (8, 16, 60):
+        clock.time = elapsed
+        app.run()
+        assert not app.exception
+        assert controller.generation == generation
+        assert controller.transcript.text == "I am not hurt"
+        assert app.session_state.scene.status is SessionStatus.ACTIVE
+        assert app.session_state.scene.unanswered_safety_turns == 0
+    next(b for b in app.button if b.label == "Send reviewed answer").click().run()
+    assert not app.exception
+    assert app.session_state.scene.safety_gate is SafetyGate.OTHER_INJURY
+    assert app.session_state.scene.status is SessionStatus.ACTIVE

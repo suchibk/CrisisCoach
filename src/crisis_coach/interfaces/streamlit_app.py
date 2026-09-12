@@ -122,6 +122,12 @@ else:
 @st.fragment(run_every="1s")
 def check_silence():
     if st.session_state.active_mode == "Practice": return
+    voice = st.session_state.get("voice_controller")
+    # audio_input does not report recording start to Python. While microphone
+    # input is enabled, wait for the reviewed answer instead of resetting the
+    # recorder or discarding transcription on an automatic timer message.
+    if voice is not None and voice.microphone_allowed:
+        return
     try: reply=st.session_state.coach.poll(st.session_state.scene)
     except PersistenceError:
         st.error("Could not save the timer update. Reopen the incident.")

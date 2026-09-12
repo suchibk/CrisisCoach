@@ -18,7 +18,7 @@ def scene():
     return clock, coach, state, first
 
 
-def test_safety_silence_retries_at_eight_seconds_then_stops(scene):
+def test_safety_silence_retries_then_pauses_without_claiming_injury(scene):
     clock, coach, state, first = scene
     clock.time += 7.9
     assert coach.poll(state) is None
@@ -26,9 +26,16 @@ def test_safety_silence_retries_at_eight_seconds_then_stops(scene):
     assert coach.poll(state).text == first.text
     assert state.unanswered_safety_turns == 1
     clock.time += 8
-    assert coach.poll(state).terminate
-    assert state.status is SessionStatus.STOOD_DOWN
+    reply = coach.poll(state)
+    assert not reply.terminate
+    assert "911" not in reply.text
+    assert state.status is SessionStatus.STOPPED
+    assert state.injury_reason is None
     assert coach.poll(state) is None
+    assert coach.turn(state, "resume").text == first.text
+    reply = coach.turn(state, "I am not hurt")
+    assert not reply.terminate
+    assert state.safety_gate is SafetyGate.OTHER_INJURY
 
 
 def test_stale_and_early_timers_do_not_mutate_state(scene):
@@ -85,14 +92,18 @@ def test_evidence_silence_does_not_become_injury(scene):
     assert state.unanswered_safety_turns == 0
 
 
-def test_location_silence_retries_then_stops(scene):
+def test_location_silence_retries_then_pauses(scene):
     clock, coach, state, _ = scene
     coach.turn(state, "No")
     coach.turn(state, "No")
     clock.time += 8
     assert coach.poll(state).expects == "yes_or_no"
     clock.time += 8
-    assert coach.poll(state).terminate
+    assert not coach.poll(state).terminate
+    assert state.status is SessionStatus.STOPPED
+    assert state.safety_gate is SafetyGate.SAFE_LOCATION
+    assert coach.turn(state, "resume").text == "Are you somewhere safe to stand?"
+    assert coach.turn(state, "Yes").expects == "photo"
 
 
 def test_immediate_duplicate_event_is_ignored(scene):
@@ -108,3 +119,29 @@ def test_event_json_contract_rejects_unknown_fields():
     assert event.control is Control.REPEAT
     with pytest.raises(ValidationError):
         INPUT_EVENT_ADAPTER.validate_python({"kind": "timer", "timer_id": "x", "extra": True})
+
+@pytest.mark.parametrize("answers", [(), ("I am not hurt",)])
+def test_injury_report_still_preempts_timeout_pause(scene, answers):
+    clock, coach, state, _ = scene
+    for answer in answers:
+        coach.turn(state, answer)
+    for _ in range(2):
+        clock.time += 8
+        coach.poll(state)
+    assert state.status is SessionStatus.STOPPED
+    assert coach.turn(state, "My chest hurts").terminate
+    assert state.status is SessionStatus.STOOD_DOWN
+
+
+def test_denial_resets_timeout_and_other_person_question_is_preserved(scene):
+    clock, coach, state, _ = scene
+    clock.time += 8
+    coach.poll(state)
+    question = coach.turn(state, "I am not hurt")
+    assert state.unanswered_safety_turns == 0
+    for _ in range(2):
+        clock.time += 8
+        assert not coach.poll(state).terminate
+    assert state.status is SessionStatus.STOPPED
+    assert coach.turn(state, "resume").text == question.text
+    assert coach.turn(state, "No one is hurt").text == "Are you somewhere safe to stand?"
