@@ -2,7 +2,13 @@
 
 Python prototype of the local-first car-collision coach described in the project documents. The current scope is limited to legal and safety use cases following a road-traffic collision. The app includes incident collection, report review, profile setup, and isolated practice scenarios for Priya, Marcus, and Dana.
 
+## Presenting this project
+
+**New teammate? Start with the [AI master class presenter handbook](docs/presenter-handover.md).** It takes you from cloning this repository to a working Dana demo, with ElevenLabs setup, screenshots, an eight-minute script, implemented AI concepts, and Q&A.
+
 ## Quick start
+
+See the [deployment handbook](docs/deployment-handbook.md), [runnable smoke test](scripts/demo_smoke.py), and [demo presentation notes](docs/demo-presentation.md).
 
 For the UI with real voice, follow the [ElevenLabs setup and illustrated demo guide](demo/README.md): `.env` configuration, Windows launch commands, microphone/playback tests, and Dana happy/unknown paths.
 
